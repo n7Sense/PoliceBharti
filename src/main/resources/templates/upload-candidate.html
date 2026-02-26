@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head :: head('Upload Candidates')"></head>
+<body class="bg-dark text-light">
+<div th:replace="fragments/header :: header"></div>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-3 col-lg-2 p-0">
+            <div th:replace="fragments/sidebar :: sidebar('uploadCandidate')"></div>
+        </div>
+        <div class="col-md-9 col-lg-10 p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h3 class="mb-0 fw-bold">Upload Candidates</h3>
+                    <p class="text-secondary mb-0 small">
+                        Upload Police Bharti candidate list using Excel (.xlsx) file.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Alert containers (populated via JS after REST upload) -->
+            <div id="uploadAlertContainer"></div>
+
+            <!-- Upload form -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-primary text-white d-flex align-items-center">
+                    <i class="bi bi-cloud-upload-fill me-2"></i>
+                    <span class="fw-semibold">Upload Excel File</span>
+                </div>
+                <div class="card-body bg-dark-subtle">
+                    <form id="candidateUploadForm" enctype="multipart/form-data" class="row gy-3 align-items-center">
+                        <div class="col-md-6">
+                            <label for="file" class="form-label fw-semibold">
+                                Select Excel File (.xlsx)
+                            </label>
+                            <input type="file"
+                                   class="form-control"
+                                   id="file"
+                                   name="file"
+                                   accept=".xlsx"
+                                   required>
+                            <div class="form-text text-light">
+                                Only .xlsx files are allowed.
+                            </div>
+                        </div>
+                        <div class="col-md-6 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary me-2" id="uploadButton">
+                                <i class="bi bi-upload me-1"></i> Upload
+                            </button>
+                            <button type="reset" class="btn btn-outline-light">
+                                <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
+                            </button>
+                        </div>
+                    </form>
+                    <small class="text-secondary d-block mt-2">
+                        This form calls the existing REST endpoint
+                        <code>/api/v1/candidates/upload</code> and expects an <code>ExcelUploadResponse</code> JSON.
+                    </small>
+                </div>
+            </div>
+
+            <!-- Search + table -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-secondary text-white d-flex flex-wrap align-items-center">
+                    <i class="bi bi-people-fill me-2"></i>
+                    <span class="fw-semibold me-auto">Uploaded Candidates</span>
+                    <span class="badge bg-dark ms-2" id="candidateCountBadge">
+                        0 records
+                    </span>
+                </div>
+                <div class="card-body bg-dark-subtle">
+                    <!-- Search row -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <label for="searchApplicationNo" class="form-label small text-uppercase fw-semibold">
+                                Search by Application No
+                            </label>
+                            <input type="text" id="searchApplicationNo"
+                                   class="form-control form-control-sm"
+                                   placeholder="Enter Application No">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="searchName" class="form-label small text-uppercase fw-semibold">
+                                Search by Name
+                            </label>
+                            <input type="text" id="searchName"
+                                   class="form-control form-control-sm"
+                                   placeholder="Enter Name">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="searchMobile" class="form-label small text-uppercase fw-semibold">
+                                Search by Mobile
+                            </label>
+                            <input type="text" id="searchMobile"
+                                   class="form-control form-control-sm"
+                                   placeholder="Enter Mobile No">
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-dark table-striped table-hover align-middle mb-0"
+                               id="candidatesTable">
+                            <thead class="table-secondary text-dark">
+                            <tr>
+                                <th>Application No</th>
+                                <th>Name</th>
+                                <th>Mobile</th>
+                                <th>Category</th>
+                                <th>Token No</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                            </thead>
+                            <tbody id="candidatesTableBody">
+                            <tr>
+                                <td colspan="7" class="text-center text-secondary py-4">
+                                    Upload a file to see candidates here.
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <small class="text-secondary d-block mt-2">
+                        Note: The current backend upload API returns summary metadata (counts and row errors).
+                        To fully populate this table with candidate details, expose an additional REST endpoint
+                        that returns candidate data (e.g. latest uploads or search results) and wire it here.
+                    </small>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>
+

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head :: head('Login')"></head>
+<body class="bg-light">
+<div class="container d-flex align-items-center justify-content-center" style="min-height: 100vh;">
+    <div class="card shadow-sm" style="max-width: 420px; width: 100%;">
+        <div class="card-body p-4">
+            <h4 class="card-title text-center mb-4">Sign In</h4>
+
+            <div th:if="${error}" class="alert alert-danger" role="alert">
+                Invalid email or password.
+            </div>
+            <div th:if="${logout}" class="alert alert-success" role="alert">
+                You have been logged out successfully.
+            </div>
+
+            <form th:action="@{/login}" method="post" th:object="${loginDto}">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" th:field="*{email}" class="form-control" placeholder="Email"/>
+                    <div class="text-danger small" th:if="${#fields.hasErrors('email')}"
+                         th:errors="*{email}"></div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Password</label>
+                    <input type="password" th:field="*{password}" class="form-control" placeholder="Password"/>
+                    <div class="text-danger small" th:if="${#fields.hasErrors('password')}"
+                         th:errors="*{password}"></div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <a th:href="@{/forgot-password}" class="small">Forgot password?</a>
+                </div>
+
+                <button class="btn btn-primary w-100" type="submit">Login</button>
+            </form>
+
+            <div class="mt-3 text-center">
+                <span class="small">Don't have an account?</span>
+                <a th:href="@{/register}" class="small">Register</a>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

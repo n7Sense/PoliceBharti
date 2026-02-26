@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body th:fragment="sidebar(activePage)">
+<div id="sidebar"
+     class="d-flex flex-column flex-shrink-0 p-3 bg-dark text-white"
+     style="width: 240px; min-height: 100vh;">
+    <div class="d-flex align-items-center mb-3 mb-md-4">
+        <span class="fs-5 fw-semibold text-uppercase">
+            <i class="bi bi-shield-lock-fill me-2"></i>Admin Panel
+        </span>
+    </div>
+    <hr class="border-secondary" />
+
+    <ul class="nav nav-pills flex-column mb-auto">
+        <li class="nav-item mb-1">
+            <a th:href="@{/dashboard}"
+               class="nav-link d-flex align-items-center text-white"
+               th:classappend="${activePage} == 'dashboard' ? ' active' : ''">
+                <i class="bi bi-speedometer2 me-2"></i>
+                <span>Dashboard</span>
+            </a>
+        </li>
+
+        <li class="nav-item mb-1">
+            <a th:href="@{/upload-candidate}"
+               class="nav-link d-flex align-items-center text-white"
+               th:classappend="${activePage} == 'uploadCandidate' ? ' active' : ''">
+                <i class="bi bi-cloud-upload-fill me-2"></i>
+                <span>Upload Candidate</span>
+            </a>
+        </li>
+
+        <li class="nav-item mb-1">
+            <a th:href="@{/register}"
+               class="nav-link d-flex align-items-center text-white"
+               th:classappend="${activePage} == 'register' ? ' active' : ''">
+                <i class="bi bi-person-plus-fill me-2"></i>
+                <span>Register</span>
+            </a>
+        </li>
+
+        <li class="nav-item mb-1">
+            <a th:href="@{/physical-test}"
+               class="nav-link d-flex align-items-center text-white"
+               th:classappend="${activePage} == 'physicalTest' ? ' active' : ''">
+                <i class="bi bi-heart-pulse-fill me-2"></i>
+                <span>Physical Test</span>
+            </a>
+        </li>
+
+        <li class="nav-item mb-1">
+            <a th:href="@{/assign-chest-number}"
+               class="nav-link d-flex align-items-center text-white"
+               th:classappend="${activePage} == 'assignChest' ? ' active' : ''">
+                <i class="bi bi-person-badge-fill me-2"></i>
+                <span>Assign Chest Number</span>
+            </a>
+        </li>
+
+        <li class="nav-item mb-1">
+            <a th:href="@{/appeal-1}"
+               class="nav-link d-flex align-items-center text-white"
+               th:classappend="${activePage} == 'appeal1' ? ' active' : ''">
+                <i class="bi bi-flag-fill me-2"></i>
+                <span>Appeal 1</span>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a th:href="@{/appeal-2}"
+               class="nav-link d-flex align-items-center text-white"
+               th:classappend="${activePage} == 'appeal2' ? ' active' : ''">
+                <i class="bi bi-flag-fill me-2"></i>
+                <span>Appeal 2</span>
+            </a>
+        </li>
+    </ul>
+
+    <hr class="border-secondary mt-auto" />
+    <div class="small text-secondary">
+        <i class="bi bi-shield-check me-1"></i>
+        Police Bharti System
+    </div>
+</div>
+</body>
+</html>

@@ -271,6 +271,38 @@ public class Candidate {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column(name = "Aadhar")
+    private Long aadhaarNumber;
+
+    /**
+     * Candidate passport photo captured from webcam.
+     * Stored as Base64 (data URL or raw base64) in LONGTEXT.
+     */
+    @Lob
+    @Column(name = "photo", columnDefinition = "LONGTEXT")
+    private String photo;
+
+    /**
+     * Left thumb biometric template (Aratek A600).
+     */
+    @Lob
+    @Column(name = "biometric1", columnDefinition = "LONGTEXT")
+    private String biometric1;
+
+    /**
+     * Right thumb biometric template (Aratek A600).
+     */
+    @Lob
+    @Column(name = "biometric2", columnDefinition = "LONGTEXT")
+    private String biometric2;
+
+    @Column(name = "attendance")
+    private Boolean attendance = false;
+
+    @Column(name = "status")
+    private Boolean status = false;
+
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();

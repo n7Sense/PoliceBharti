@@ -1,5 +1,7 @@
 package com.nst.ufrs.controller;
 
+import com.nst.ufrs.dto.CandidateDetailsDto;
+import com.nst.ufrs.dto.CandidateEnrollmentRequest;
 import com.nst.ufrs.dto.CandidateListItemDto;
 import com.nst.ufrs.dto.ExcelUploadResponse;
 import com.nst.ufrs.service.CandidateService;
@@ -15,6 +17,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.NoSuchElementException;
 
 /**
  * REST Controller for Police Bharti Candidate Excel Upload.
@@ -89,12 +93,38 @@ public class CandidateController {
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Search/list candidates for admin UI")
     public ResponseEntity<java.util.List<CandidateListItemDto>> listCandidates(
-            @RequestParam(value = "applicationNo", required = false) Long applicationNo,
+            @RequestParam(value = "applicationNo", required = false) String applicationNo,
             @RequestParam(value = "mobileNo", required = false) Long mobileNo,
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "limit", required = false, defaultValue = "200") int limit
     ) {
         var result = candidateService.searchCandidates(applicationNo, mobileNo, name, limit);
         return ResponseEntity.ok(result);
+    }
+
+    @GetMapping(value = "/details", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Fetch candidate details by application number")
+    public ResponseEntity<?> getCandidateDetails(@RequestParam("applicationNo") long applicationNo) {
+        try {
+            CandidateDetailsDto dto = candidateService.getCandidateDetailsByApplicationNo(applicationNo);
+            return ResponseEntity.ok(dto);
+        } catch (NoSuchElementException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(java.util.Map.of("message", "Invalid Application Number. Candidate not found."));
+        }
+    }
+
+    @PostMapping(value = "/enroll", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Save candidate photo and biometrics")
+    public ResponseEntity<?> enrollCandidate(@RequestBody CandidateEnrollmentRequest request) {
+        try {
+            candidateService.enrollCandidate(request);
+            return ResponseEntity.ok(java.util.Map.of("message", "Candidate Added Successfully"));
+        } catch (NoSuchElementException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(java.util.Map.of("message", "Invalid Application Number. Candidate not found."));
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("message", ex.getMessage()));
+        }
     }
 }

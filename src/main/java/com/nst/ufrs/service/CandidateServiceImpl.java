@@ -1,6 +1,8 @@
 package com.nst.ufrs.service;
 
 import com.nst.ufrs.domain.Candidate;
+import com.nst.ufrs.dto.CandidateDetailsDto;
+import com.nst.ufrs.dto.CandidateEnrollmentRequest;
 import com.nst.ufrs.dto.CandidateListItemDto;
 import com.nst.ufrs.dto.ExcelUploadResponse;
 import com.nst.ufrs.dto.ExcelUploadResponse.RowError;
@@ -32,6 +34,7 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -324,41 +327,83 @@ public class CandidateServiceImpl implements CandidateService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<CandidateListItemDto> searchCandidates(Long applicationNo, Long mobileNo, String name, int limit) {
-        List<Candidate> candidates = new ArrayList<>();
-
-        boolean hasAppNo = applicationNo != null;
+    public List<CandidateListItemDto> searchCandidates(String applicationNoText, Long mobileNo, String name, int limit) {
+        List<Candidate> all = candidateRepository.findAll();
+        String appPrefix = applicationNoText != null ? applicationNoText.trim() : "";
+        boolean hasAppNo = !appPrefix.isEmpty();
         boolean hasMobile = mobileNo != null;
         boolean hasName = name != null && !name.trim().isEmpty();
 
         if (!hasAppNo && !hasMobile && !hasName) {
-            return getRecentCandidates(limit);
+            return mapToListItems(all);
         }
 
-        if (hasAppNo) {
-            candidateRepository.findByApplicationNo(applicationNo).ifPresent(candidates::add);
-        }
-
-        if (hasMobile) {
-            // mobileNo is not unique; simple scan is sufficient for admin table
-            candidates.addAll(
-                    candidateRepository.findAll().stream()
-                            .filter(c -> mobileNo.equals(c.getMobileNo()))
-                            .toList()
-            );
-        }
-
-        if (hasName) {
-            candidates.addAll(candidateRepository.searchByFullName(name.trim()));
-        }
-
-        // Remove potential duplicates (same id)
-        List<Candidate> distinct = candidates.stream()
-                .distinct()
+        List<Candidate> filtered = all.stream()
+                .filter(c -> {
+                    if (!hasAppNo || c.getApplicationNo() == null) return true;
+                    String appStr = c.getApplicationNo().toString();
+                    return appStr.startsWith(appPrefix);
+                })
+                .filter(c -> {
+                    if (!hasMobile) return true;
+                    return mobileNo.equals(c.getMobileNo());
+                })
+                .filter(c -> {
+                    if (!hasName) return true;
+                    String fullName = (c.getFirstName() == null ? "" : c.getFirstName()) + " " +
+                                      (c.getSurname() == null ? "" : c.getSurname());
+                    return fullName.toLowerCase().contains(name.trim().toLowerCase());
+                })
                 .limit(Math.max(limit, 1))
                 .toList();
 
-        return mapToListItems(distinct);
+        return mapToListItems(filtered);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public CandidateDetailsDto getCandidateDetailsByApplicationNo(long applicationNo) {
+        Candidate c = candidateRepository.findByApplicationNo(applicationNo)
+                .orElseThrow(() -> new NoSuchElementException("Candidate not found"));
+
+        return CandidateDetailsDto.builder()
+                .applicationNo(c.getApplicationNo())
+                .post(c.getPost())
+                .gender(c.getGender())
+                .dob(c.getDob())
+                .applicationCategory(c.getApplicationCategory())
+                .parallelReservation(c.getParallelReservation())
+                .mobileNo(c.getMobileNo())
+                .hasPhoto(c.getPhoto() != null && !c.getPhoto().isBlank())
+                .hasBiometric1(c.getBiometric1() != null && !c.getBiometric1().isBlank())
+                .hasBiometric2(c.getBiometric2() != null && !c.getBiometric2().isBlank())
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public void enrollCandidate(CandidateEnrollmentRequest request) {
+        if (request == null || request.getApplicationNo() == null) {
+            throw new IllegalArgumentException("applicationNo is required");
+        }
+        if (request.getPhoto() == null || request.getPhoto().isBlank()) {
+            throw new IllegalArgumentException("photo is required");
+        }
+        if (request.getBiometric1() == null || request.getBiometric1().isBlank()) {
+            throw new IllegalArgumentException("biometric1 is required");
+        }
+        if (request.getBiometric2() == null || request.getBiometric2().isBlank()) {
+            throw new IllegalArgumentException("biometric2 is required");
+        }
+
+        Candidate c = candidateRepository.findByApplicationNo(request.getApplicationNo())
+                .orElseThrow(() -> new NoSuchElementException("Candidate not found"));
+
+        c.setPhoto(request.getPhoto());
+        c.setBiometric1(request.getBiometric1());
+        c.setBiometric2(request.getBiometric2());
+
+        candidateRepository.save(c);
     }
 
     private List<CandidateListItemDto> mapToListItems(List<Candidate> candidates) {

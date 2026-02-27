@@ -1,0 +1,108 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Aratek CID Demo</title>
+    <link rel="stylesheet" href="app.css" type="text/css" />
+    <script src="Client.js"></script>
+    <script src="app.js"></script>
+</head>
+
+<body>
+    <h3 id="title">
+        Aratek Fingerprint Device Management Assistant Demo (CID)
+    </h3>
+
+    <a id="link" href="AratekFMA://4397">
+        Open Device Management Assistant
+    </a>
+
+    <br /><br />
+
+    <button id="connect_server" onclick="connect()">
+        Connect Assistant Program
+    </button>
+
+    <button id="open_device" onclick="LIVESCAN_Init()">
+        Initialize Device
+    </button>
+
+    <button id="close_device" onclick="LIVESCAN_Close()">
+        Close Device
+    </button>
+
+    <button id="device_count" onclick="LIVESCAN_GetChannelCount()">
+        Get Device Count
+    </button>
+
+    <button id="device_desc" onclick="LIVESCAN_GetDesc()">
+        Get Device Information
+    </button>
+
+    <br /><br />
+
+    <button id="start" onclick="LIVESCAN_BeginCapture()">
+        Start Preview
+    </button>
+
+    <button id="end" onclick="LIVESCAN_EndCapture()">
+        Stop Preview
+    </button>
+
+    <br /><br />
+
+    <button id="cap1" onclick="CID_Cap1()">
+        Capture Image 1
+    </button>
+
+    <button id="ext1" onclick="CID_Ext1()">
+        Extract Image 1 Features
+    </button>
+
+    <button id="cap2" onclick="CID_Cap2()">
+        Capture Image 2
+    </button>
+
+    <button id="ext2" onclick="CID_Ext2()">
+        Extract Image 2 Features
+    </button>
+
+    <br /><br />
+
+    <button id="feaverify" onclick="FP_FeatureMatch()">
+        Match Feature 1 and Feature 2
+    </button>
+
+    <button id="imgverify" onclick="FP_ImageMatch()">
+        Match Image 1 and Feature 2
+    </button>
+
+    <br /><br />
+
+    <img id="img"  border="0" width="256" height="360" />
+    <img id="img1" border="0" width="256" height="360" />
+    <img id="img2" border="0" width="256" height="360" />
+
+    <br /><br />
+
+    <textarea
+        name="FeaData"
+        id="Fea1"
+        cols="54"
+        rows="20"
+        style="height:300px"
+        placeholder="Feature Data 1">
+    </textarea>
+
+    <textarea
+        name="FeaData"
+        id="Fea2"
+        cols="54"
+        rows="20"
+        style="height:300px"
+        placeholder="Feature Data 2">
+    </textarea>
+
+    <div id="content"></div>
+</body>
+</html>

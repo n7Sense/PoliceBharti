@@ -1,6 +1,8 @@
 package com.nst.ufrs.service;
 
 import com.nst.ufrs.dto.CandidateListItemDto;
+import com.nst.ufrs.dto.CandidateDetailsDto;
+import com.nst.ufrs.dto.CandidateEnrollmentRequest;
 import com.nst.ufrs.dto.ExcelUploadResponse;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,8 +30,12 @@ public interface CandidateService {
     List<CandidateListItemDto> getRecentCandidates(int limit);
 
     /**
-     * Searches candidates by optional application number, mobile number and name.
+     * Searches candidates by optional application number (prefix text), mobile number and name.
      * All parameters are optional; if all are null/blank, recent candidates are returned.
      */
-    List<CandidateListItemDto> searchCandidates(Long applicationNo, Long mobileNo, String name, int limit);
+    List<CandidateListItemDto> searchCandidates(String applicationNoText, Long mobileNo, String name, int limit);
+
+    CandidateDetailsDto getCandidateDetailsByApplicationNo(long applicationNo);
+
+    void enrollCandidate(CandidateEnrollmentRequest request);
 }

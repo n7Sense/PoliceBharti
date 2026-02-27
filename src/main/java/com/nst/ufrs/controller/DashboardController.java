@@ -31,4 +31,10 @@ public class DashboardController {
 
         return "upload-candidate";
     }
+
+    @GetMapping("/add-candidate")
+    public String addCandidate(Model model) {
+
+        return "add-candidate";
+    }
 }

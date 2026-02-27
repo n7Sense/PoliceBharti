@@ -1,0 +1,68 @@
+﻿
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>TrustFinger Device Management Demo</title>
+    <link rel="stylesheet" href="app.css" type="text/css" />
+    <script src="language.js"></script>
+    <script src="Client.js"></script>
+    <script src="app.js"></script>
+</head>
+
+<body>
+    
+    <h3 id="title">Aratek Fingerprint Device Management Assistant Demo (TrustFinger)</h3>
+
+    <a id="link" href="AratekFMA://4397">Open Device Management Assistant</a>
+
+    <br /><br />
+
+    <button id="connect_server" onclick="connect()">Connect Assistant</button>
+    <button id="open_device" onclick="open_device()">Open Device</button>
+    <button id="close_device" onclick="close_device()">Close Device</button>
+    <button id="device_count" onclick="get_device_count()">Get Device Count</button>
+    <button id="device_desc" onclick="get_device_desc()">Get Device Information</button>
+
+    <br /><br />
+
+    <button id="capture1" onclick="capturefinger1()">Capture Image 1</button>
+    <button id="capture2" onclick="capturefinger2()">Capture Image 2</button>
+    <button id="capture3" onclick="capturefinger3()">Capture Image 3</button>
+    <button id="generalize" onclick="generalizetemp()">Generate Template</button>
+    <button id="verify" onclick="verify()">Verify Image 2 & 3</button>
+
+    <br /><br />
+
+    <button id="start" onclick="start()">Start Preview</button>
+    <button id="end" onclick="end()">Stop Preview</button>
+    <button id="red" onclick="operate_red()">Turn On Red Light</button>
+    <button id="green" onclick="operate_green()">Turn On Green Light</button>
+
+    <br /><br />
+
+    <button id="b2r" onclick="bmp2raw()">Convert BMP to RAW</button>
+    <button id="b2wsq" onclick="bmp2wsq()">Convert BMP to WSQ</button>
+    <button id="b2iso" onclick="bmp2iso()">Convert BMP to ISO</button>
+    <button id="b2ansi" onclick="bmp2ansi()">Convert BMP to ANSI</button>
+
+    <br /><br />
+
+    <img id="img1" border="1" width="300" height="400" />
+    <img id="img2" border="1" width="300" height="400" />
+    <img id="img3" border="1" width="300" height="400" />
+
+    <br />
+
+    <textarea
+        name="ImageData"
+        id="imgdata"
+        cols="54"
+        rows="20"
+        style="height:300px"
+        placeholder="Image data will appear here">
+    </textarea>
+
+    <div id="content"></div>
+</body>
+</html>

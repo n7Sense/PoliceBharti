@@ -30,7 +30,13 @@ public class PhysicalTest {
     @Column(name = "status")
     private Boolean status;
 
-    // For Appeal 1
+    /**
+     *  If Candidate Reject in Physical Test
+     * Required
+     * @height >= 5.5 fit
+     * @chest >= 30 inch so if he have any dout then he will go for Appeal 1
+     * again physical test
+     */
     @Column(name = "height1")
     private Float height1;
 
@@ -43,7 +49,9 @@ public class PhysicalTest {
     @Column(name = "status1")
     private Boolean status1;
 
-    // For Appeal 2
+    /**
+     * iF Candidate rejected in Appeal 1 So he will go for Appeal 2
+     */
     @Column(name = "height2")
     private Float height2;
 

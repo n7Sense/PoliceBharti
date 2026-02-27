@@ -402,6 +402,7 @@ public class CandidateServiceImpl implements CandidateService {
         c.setPhoto(request.getPhoto());
         c.setBiometric1(request.getBiometric1());
         c.setBiometric2(request.getBiometric2());
+        c.setAttendance(true);
 
         candidateRepository.save(c);
     }

@@ -28,13 +28,16 @@ public class DashboardController {
 
     @GetMapping("/upload-candidate")
     public String uploadCandidate(Model model) {
-
         return "upload-candidate";
     }
 
     @GetMapping("/add-candidate")
     public String addCandidate(Model model) {
-
         return "add-candidate";
+    }
+
+    @GetMapping("/physical-test")
+    public String physicalTest(Model model) {
+        return "physical-test";
     }
 }

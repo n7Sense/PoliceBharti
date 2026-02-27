@@ -23,8 +23,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const mobileNoEl = document.getElementById("mobileNo");
 
     const photoBase64El = document.getElementById("photoBase64");
-    const photoPreviewEl = document.getElementById("photoPreview");
-    const photoPlaceholderEl = document.getElementById("photoPlaceholder");
 
     let candidateLoaded = false;
     let webcamStream = null;
@@ -49,17 +47,6 @@ document.addEventListener("DOMContentLoaded", function () {
         candidateLoaded = false;
     }
 
-    function clearCapturedData() {
-        // photo
-        photoBase64El.value = "";
-        photoPreviewEl.style.display = "none";
-        photoPreviewEl.src = "";
-        photoPlaceholderEl.style.display = "block";
-
-        // biometrics templates
-        biometric1El.value = "";
-        biometric2El.value = "";
-    }
 
     function formatDob(dob) {
         if (!dob) return "";
@@ -69,7 +56,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     async function fetchCandidateByApplicationNo(appNo) {
         clearCandidateFields();
-        clearCapturedData();
 
         if (!appNo) {
             showAlert("danger", "Application No is required.");
@@ -126,132 +112,12 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // Webcam capture
-    async function openWebcam() {
-        try {
-            webcamStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-            webcamVideo.srcObject = webcamStream;
-            webcamVideo.style.display = "block";
-            capturePhotoBtn.disabled = false;
-            closeCameraBtn.disabled = false;
-            showAlert("info", "Webcam opened. Click Capture.");
-        } catch (e) {
-            console.error(e);
-            showAlert("danger", "Unable to access webcam. Please allow camera permission.");
-        }
-    }
-
-    function closeWebcam() {
-        if (webcamStream) {
-            webcamStream.getTracks().forEach(t => t.stop());
-            webcamStream = null;
-        }
-        webcamVideo.srcObject = null;
-        webcamVideo.style.display = "none";
-        capturePhotoBtn.disabled = true;
-        closeCameraBtn.disabled = true;
-    }
-
-    function capturePhoto() {
-        if (!webcamVideo || !webcamStream) return;
-
-        const w = 600;
-        const h = 720;
-        webcamCanvas.width = w;
-        webcamCanvas.height = h;
-        const ctx = webcamCanvas.getContext("2d");
-        ctx.drawImage(webcamVideo, 0, 0, w, h);
-
-        const dataUrl = webcamCanvas.toDataURL("image/jpeg", 0.9);
-        photoBase64El.value = dataUrl;
-
-        photoPreviewEl.src = dataUrl;
-        photoPreviewEl.style.display = "block";
-        photoPlaceholderEl.style.display = "none";
-
-        showAlert("success", "Photo captured successfully.");
-    }
-
-    if (openCameraBtn) openCameraBtn.addEventListener("click", openWebcam);
-    if (closeCameraBtn) closeCameraBtn.addEventListener("click", closeWebcam);
-    if (capturePhotoBtn) capturePhotoBtn.addEventListener("click", capturePhoto);
 
     // Biometric integration using existing scripts
     function buildCsrfHeaders() {
         const headers = { "Content-Type": "application/json" };
         if (csrfToken && csrfHeaderName) headers[csrfHeaderName] = csrfToken;
         return headers;
-    }
-
-    function waitFor(conditionFn, timeoutMs = 8000, pollMs = 200) {
-        return new Promise((resolve, reject) => {
-            const start = Date.now();
-            const timer = setInterval(() => {
-                if (conditionFn()) {
-                    clearInterval(timer);
-                    resolve(true);
-                    return;
-                }
-                if (Date.now() - start > timeoutMs) {
-                    clearInterval(timer);
-                    reject(new Error("timeout"));
-                }
-            }, pollMs);
-        });
-    }
-
-    async function prepareBiometricDevice() {
-        // app.js exposes global: client, connect(), open_device(), get_device_desc()
-        if (typeof client === "undefined" || typeof connect !== "function") {
-            throw new Error("Biometric scripts not loaded.");
-        }
-
-        if (!client.isConnect) {
-            connect();
-        }
-        await waitFor(() => client.isConnect === true, 6000);
-
-        if (typeof open_device === "function") {
-            open_device();
-        }
-
-        if (typeof get_device_desc === "function") {
-            get_device_desc();
-        }
-
-        await waitFor(() => typeof device_id !== "undefined" && device_id, 6000);
-    }
-
-    function hookCaptureCallback() {
-        if (typeof client === "undefined") return;
-        if (client.__ufrs_hooked) return;
-        if (typeof client.OnCaptureFingerData !== "function") {
-            // underlying handler from app.js not ready yet
-            return;
-        }
-
-        client.__ufrs_hooked = true;
-
-        const original = client.OnCaptureFingerData;
-        client.OnCaptureFingerData = function (code, msg, image) {
-            try {
-                // app.js already sets global: feature1/feature2 based on flag
-                if (code === 0 && image) {
-                    if (typeof flag !== "undefined") {
-                        if (flag === 1) {
-                            biometric1El.value = image.feature_data || feature1 || "";
-                        } else if (flag === 2) {
-                            biometric2El.value = image.feature_data || feature2 || "";
-                        }
-                    }
-                }
-            } catch (e) {
-                console.error("capture hook error", e);
-            }
-            if (typeof original === "function") {
-                return original(code, msg, image);
-            }
-        };
     }
 
     // Ensure hook runs after app.js has attached its handlers (window.onload)
@@ -264,52 +130,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    async function captureLeftThumb() {
-        try {
-            if (typeof capturefinger1 !== "function") throw new Error("capturefinger1 not available");
-            capturefinger1();
-            showAlert("info", "Left thumb capturing. After image appears, place your Right thumb and click 'Capture Right'.");
-
-        } catch (e) {
-            console.error(e);
-            showAlert("danger", "Unable to start left thumb capture. Make sure device is connected via Open Assistant.");
-        }
-    }
-
-    async function captureRightThumb() {
-        try {
-            if (typeof capturefinger2 !== "function") throw new Error("capturefinger2 not available");
-            capturefinger2();
-            showAlert("info", "Right thumb capturing. Both thumbs will be saved with candidate.");
-        } catch (e) {
-            console.error(e);
-            showAlert("danger", "Unable to start right thumb capture. Make sure device is connected via Open Assistant.");
-        }
-    }
-
-    if (captureLeftThumbBtn) captureLeftThumbBtn.addEventListener("click", captureLeftThumb);
-    if (captureRightThumbBtn) captureRightThumbBtn.addEventListener("click", captureRightThumb);
-
-    if (openAssistantLink) {
-        openAssistantLink.addEventListener("click", async (e) => {
-            // Let OS handle AratekFMA://4397, but also prepare device via SDK
-            e.preventDefault();
-            try {
-                await prepareBiometricDevice();
-                showAlert("success", "Device ready. Place your Left finger on the scanner and click 'Capture Left'.");
-            } catch (err) {
-                console.error(err);
-                showAlert("danger", "Unable to prepare biometric device. Ensure Aratek Assistant is running, then try again.");
-            }
-
-            // Attempt to open the Assistant protocol as well
-            try {
-                window.location.href = "AratekFMA://4397";
-            } catch (ignored) {
-                // ignore
-            }
-        });
-    }
 
     // Save
     async function saveCandidate() {
@@ -381,8 +201,6 @@ document.addEventListener("DOMContentLoaded", function () {
         resetBtn.addEventListener("click", () => {
             applicationNoEl.value = "";
             clearCandidateFields();
-            clearCapturedData();
-            closeWebcam();
             showAlert("info", "Form reset.");
         });
     }

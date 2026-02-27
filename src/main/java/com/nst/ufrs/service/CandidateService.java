@@ -3,6 +3,7 @@ package com.nst.ufrs.service;
 import com.nst.ufrs.dto.CandidateListItemDto;
 import com.nst.ufrs.dto.CandidateDetailsDto;
 import com.nst.ufrs.dto.CandidateEnrollmentRequest;
+import com.nst.ufrs.dto.CandidateVerificationDataDto;
 import com.nst.ufrs.dto.ExcelUploadResponse;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -36,6 +37,8 @@ public interface CandidateService {
     List<CandidateListItemDto> searchCandidates(String applicationNoText, Long mobileNo, String name, int limit);
 
     CandidateDetailsDto getCandidateDetailsByApplicationNo(long applicationNo);
+
+    CandidateVerificationDataDto getCandidateVerificationData(long applicationNo);
 
     void enrollCandidate(CandidateEnrollmentRequest request);
 }

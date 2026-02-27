@@ -7,7 +7,15 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "Physical_Test")
+@Table(
+        name = "physical_test",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_physical_test_candidate_id", columnNames = {"candidate_id"})
+        },
+        indexes = {
+                @Index(name = "idx_physical_test_candidate_id", columnList = "candidate_id")
+        }
+)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -17,6 +25,11 @@ public class PhysicalTest {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "candidate_id", nullable = false, unique = true,
+            foreignKey = @ForeignKey(name = "fk_physical_test_candidate"))
+    private Candidate candidate;
 
     @Column(name = "height")
     private Float height;

@@ -3,6 +3,7 @@ package com.nst.ufrs.controller;
 import com.nst.ufrs.dto.CandidateDetailsDto;
 import com.nst.ufrs.dto.CandidateEnrollmentRequest;
 import com.nst.ufrs.dto.CandidateListItemDto;
+import com.nst.ufrs.dto.CandidateVerificationDataDto;
 import com.nst.ufrs.dto.ExcelUploadResponse;
 import com.nst.ufrs.service.CandidateService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -107,6 +108,18 @@ public class CandidateController {
     public ResponseEntity<?> getCandidateDetails(@RequestParam("applicationNo") long applicationNo) {
         try {
             CandidateDetailsDto dto = candidateService.getCandidateDetailsByApplicationNo(applicationNo);
+            return ResponseEntity.ok(dto);
+        } catch (NoSuchElementException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(java.util.Map.of("message", "Invalid Application Number. Candidate not found."));
+        }
+    }
+
+    @GetMapping(value = "/verification-data", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Fetch stored photo + biometrics for verification")
+    public ResponseEntity<?> getVerificationData(@RequestParam("applicationNo") long applicationNo) {
+        try {
+            CandidateVerificationDataDto dto = candidateService.getCandidateVerificationData(applicationNo);
             return ResponseEntity.ok(dto);
         } catch (NoSuchElementException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)

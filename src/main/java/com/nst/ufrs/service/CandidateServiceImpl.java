@@ -4,6 +4,7 @@ import com.nst.ufrs.domain.Candidate;
 import com.nst.ufrs.dto.CandidateDetailsDto;
 import com.nst.ufrs.dto.CandidateEnrollmentRequest;
 import com.nst.ufrs.dto.CandidateListItemDto;
+import com.nst.ufrs.dto.CandidateVerificationDataDto;
 import com.nst.ufrs.dto.ExcelUploadResponse;
 import com.nst.ufrs.dto.ExcelUploadResponse.RowError;
 import com.nst.ufrs.exception.ExcelParseException;
@@ -33,8 +34,10 @@ import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -44,6 +47,7 @@ public class CandidateServiceImpl implements CandidateService {
     private static final String EXCEL_CONTENT_TYPE =
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
     private static final int BATCH_SIZE = 500;
+    private static final Object UPLOAD_LOCK = new Object();
 
     private final CandidateRepository candidateRepository;
 
@@ -58,110 +62,219 @@ public class CandidateServiceImpl implements CandidateService {
 
         validateFile(file);
 
-        List<RowError> allErrors    = new ArrayList<>();
-        List<Candidate> batchBuffer = new ArrayList<>(BATCH_SIZE);
-        int[] counters = {0, 0, 0}; // [totalRows, savedCount, skippedCount]
+        synchronized (UPLOAD_LOCK) {
+            List<RowError> allErrors    = new ArrayList<>();
+            List<Candidate> batchBuffer = new ArrayList<>(BATCH_SIZE);
+            final List<Integer> batchRowNums = new ArrayList<>(BATCH_SIZE);
+            final Set<Long> seenApplicationNos = new HashSet<>();
+            final Set<Long> seenTokenNos = new HashSet<>();
+            int[] counters = {0, 0, 0}; // [totalRows, savedCount, skippedCount]
 
-        log.info("Starting SAX Excel upload: filename={}, size={}B",
-                file.getOriginalFilename(), file.getSize());
+            log.info("Starting SAX Excel upload: filename={}, size={}B",
+                    file.getOriginalFilename(), file.getSize());
 
-        try (InputStream is = file.getInputStream();
-             OPCPackage pkg = OPCPackage.open(is)) {
+            try (InputStream is = file.getInputStream();
+                 OPCPackage pkg = OPCPackage.open(is)) {
 
-            XSSFReader       reader        = new XSSFReader(pkg);
-            SharedStrings    sharedStrings = reader.getSharedStringsTable();
-            Styles           styles        = reader.getStylesTable();
-            InputStream      sheetStream   = reader.getSheetsData().next(); // first sheet
+                XSSFReader       reader        = new XSSFReader(pkg);
+                SharedStrings    sharedStrings = reader.getSharedStringsTable();
+                Styles           styles        = reader.getStylesTable();
+                InputStream      sheetStream   = reader.getSheetsData().next(); // first sheet
 
-            // SAX handler — row aate hi callback milta hai
-            SheetContentsHandler sheetHandler = new SheetContentsHandler() {
+                // SAX handler — row aate hi callback milta hai
+                SheetContentsHandler sheetHandler = new SheetContentsHandler() {
 
-                private String[] currentRow = new String[77]; // 77 columns
-                private boolean  isHeader   = true;
+                    private String[] currentRow = new String[77]; // 77 columns
+                    private boolean  isHeader   = true;
 
-                @Override
-                public void startRow(int rowNum) {
-                    currentRow = new String[77];
+                    @Override
+                    public void startRow(int rowNum) {
+                        currentRow = new String[77];
+                    }
+
+                    @Override
+                    public void endRow(int rowNum) {
+                        // Row 0 = header → skip
+                        if (isHeader) { isHeader = false; return; }
+
+                        // Completely empty row check
+                        boolean empty = true;
+                        for (String s : currentRow) {
+                            if (s != null && !s.isBlank()) { empty = false; break; }
+                        }
+                        if (empty) { counters[2]++; return; }
+
+                        counters[0]++; // totalRows
+
+                        List<RowError> rowErrors = new ArrayList<>();
+                        Candidate candidate = parseRow(currentRow, rowNum + 1, rowErrors);
+
+                        if (!rowErrors.isEmpty()) {
+                            allErrors.addAll(rowErrors);
+                            counters[2]++; // invalid row skipped
+                            return;
+                        }
+
+                        if (candidate == null || candidate.getApplicationNo() == null) {
+                            allErrors.add(RowError.builder()
+                                    .rowNumber(rowNum + 1)
+                                    .field("ApplicationNo")
+                                    .rawValue(candidate == null ? null : String.valueOf(candidate.getApplicationNo()))
+                                    .reason("ApplicationNo is required")
+                                    .build());
+                            counters[2]++;
+                            return;
+                        }
+
+                        Long appNo = candidate.getApplicationNo();
+                        if (!seenApplicationNos.add(appNo)) {
+                            allErrors.add(RowError.builder()
+                                    .rowNumber(rowNum + 1)
+                                    .field("ApplicationNo")
+                                    .rawValue(String.valueOf(appNo))
+                                    .reason("Duplicate ApplicationNo in uploaded file (row skipped)")
+                                    .build());
+                            counters[2]++;
+                            return;
+                        }
+
+                        Long tokenNo = candidate.getTokenNo();
+                        if (tokenNo != null && !seenTokenNos.add(tokenNo)) {
+                            allErrors.add(RowError.builder()
+                                    .rowNumber(rowNum + 1)
+                                    .field("TokenNo")
+                                    .rawValue(String.valueOf(tokenNo))
+                                    .reason("Duplicate TokenNo in uploaded file (row skipped)")
+                                    .build());
+                            counters[2]++;
+                            return;
+                        }
+
+                        batchBuffer.add(candidate);
+                        batchRowNums.add(rowNum + 1);
+
+                        // Batch flush
+                        if (batchBuffer.size() >= BATCH_SIZE) {
+                            flushBatch(batchBuffer, batchRowNums, counters, allErrors);
+                        }
+                    }
+
+                    @Override
+                    public void cell(String cellReference, String formattedValue, XSSFComment comment) {
+                        if (cellReference == null || formattedValue == null) return;
+                        // Column index निकालो (A=0, B=1 ...)
+                        int colIdx = new CellReference(cellReference).getCol();
+                        if (colIdx < 77) {
+                            currentRow[colIdx] = formattedValue.trim();
+                        }
+                    }
+                };
+
+                // SAX parser setup
+                SAXParserFactory factory = SAXParserFactory.newInstance();
+                factory.setNamespaceAware(true);
+                XMLReader xmlReader = factory.newSAXParser().getXMLReader();
+
+                ContentHandler handler = new XSSFSheetXMLHandler(
+                        styles, null, sharedStrings, sheetHandler, new org.apache.poi.ss.usermodel.DataFormatter(), false
+                );
+                xmlReader.setContentHandler(handler);
+                xmlReader.parse(new InputSource(sheetStream));
+                sheetStream.close();
+
+                // Remaining records save karo
+                if (!batchBuffer.isEmpty()) {
+                    flushBatch(batchBuffer, batchRowNums, counters, allErrors);
                 }
 
-                @Override
-                public void endRow(int rowNum) {
-                    // Row 0 = header → skip
-                    if (isHeader) { isHeader = false; return; }
-
-                    // Completely empty row check
-                    boolean empty = true;
-                    for (String s : currentRow) {
-                        if (s != null && !s.isBlank()) { empty = false; break; }
-                    }
-                    if (empty) { counters[2]++; return; }
-
-                    counters[0]++; // totalRows
-
-                    List<RowError> rowErrors = new ArrayList<>();
-                    Candidate candidate = parseRow(currentRow, rowNum + 1, rowErrors);
-
-                    if (!rowErrors.isEmpty()) allErrors.addAll(rowErrors);
-                    batchBuffer.add(candidate);
-
-                    // Batch flush
-                    if (batchBuffer.size() >= BATCH_SIZE) {
-                        candidateRepository.saveAll(batchBuffer);
-                        counters[1] += batchBuffer.size();
-                        log.debug("Flushed batch. Total saved: {}", counters[1]);
-                        batchBuffer.clear();
-                    }
-                }
-
-                @Override
-                public void cell(String cellReference, String formattedValue, XSSFComment comment) {
-                    if (cellReference == null || formattedValue == null) return;
-                    // Column index निकालो (A=0, B=1 ...)
-                    int colIdx = new CellReference(cellReference).getCol();
-                    if (colIdx < 77) {
-                        currentRow[colIdx] = formattedValue.trim();
-                    }
-                }
-            };
-
-            // SAX parser setup
-            SAXParserFactory factory = SAXParserFactory.newInstance();
-            factory.setNamespaceAware(true);
-            XMLReader xmlReader = factory.newSAXParser().getXMLReader();
-
-            ContentHandler handler = new XSSFSheetXMLHandler(
-                    styles, null, sharedStrings, sheetHandler, new org.apache.poi.ss.usermodel.DataFormatter(), false
-            );
-            xmlReader.setContentHandler(handler);
-            xmlReader.parse(new InputSource(sheetStream));
-            sheetStream.close();
-
-            // Remaining records save karo
-            if (!batchBuffer.isEmpty()) {
-                candidateRepository.saveAll(batchBuffer);
-                counters[1] += batchBuffer.size();
-                batchBuffer.clear();
+            } catch (InvalidFileException | ExcelParseException ex) {
+                throw ex;
+            } catch (Exception ex) {
+                log.error("Fatal error during SAX Excel processing: {}", ex.getMessage(), ex);
+                throw new ExcelParseException("Failed to process Excel file: " + ex.getMessage(), ex);
             }
 
-        } catch (InvalidFileException | ExcelParseException ex) {
-            throw ex;
-        } catch (Exception ex) {
-            log.error("Fatal error during SAX Excel processing: {}", ex.getMessage(), ex);
-            throw new ExcelParseException("Failed to process Excel file: " + ex.getMessage(), ex);
+            log.info("Upload done. totalRows={}, saved={}, skipped={}, errors={}",
+                    counters[0], counters[1], counters[2], allErrors.size());
+
+            return ExcelUploadResponse.builder()
+                    .success(true)
+                    .message(String.format("Upload complete. %d records saved successfully.", counters[1]))
+                    .totalRowsRead(counters[0])
+                    .savedCount(counters[1])
+                    .skippedCount(counters[2])
+                    .errorCount(allErrors.size())
+                    .errors(allErrors)
+                    .build();
+        }
+    }
+
+    private void flushBatch(List<Candidate> batchBuffer,
+                            List<Integer> batchRowNums,
+                            int[] counters,
+                            List<RowError> allErrors) {
+        if (batchBuffer.isEmpty()) return;
+
+        List<Long> appNos = new ArrayList<>(batchBuffer.size());
+        List<Long> tokenNos = new ArrayList<>(batchBuffer.size());
+        for (Candidate c : batchBuffer) {
+            if (c.getApplicationNo() != null) appNos.add(c.getApplicationNo());
+            if (c.getTokenNo() != null) tokenNos.add(c.getTokenNo());
         }
 
-        log.info("Upload done. totalRows={}, saved={}, skipped={}, errors={}",
-                counters[0], counters[1], counters[2], allErrors.size());
+        Set<Long> existingAppNos = new HashSet<>();
+        if (!appNos.isEmpty()) {
+            existingAppNos.addAll(candidateRepository.findExistingApplicationNos(appNos));
+        }
 
-        return ExcelUploadResponse.builder()
-                .success(true)
-                .message(String.format("Upload complete. %d records saved successfully.", counters[1]))
-                .totalRowsRead(counters[0])
-                .savedCount(counters[1])
-                .skippedCount(counters[2])
-                .errorCount(allErrors.size())
-                .errors(allErrors)
-                .build();
+        Set<Long> existingTokenNos = new HashSet<>();
+        if (!tokenNos.isEmpty()) {
+            existingTokenNos.addAll(candidateRepository.findExistingTokenNos(tokenNos));
+        }
+
+        List<Candidate> toSave = new ArrayList<>(batchBuffer.size());
+        for (int i = 0; i < batchBuffer.size(); i++) {
+            Candidate c = batchBuffer.get(i);
+            int rowNum = batchRowNums.get(i);
+
+            Long appNo = c.getApplicationNo();
+            if (appNo != null && existingAppNos.contains(appNo)) {
+                counters[2]++;
+                allErrors.add(RowError.builder()
+                        .rowNumber(rowNum)
+                        .field("ApplicationNo")
+                        .rawValue(String.valueOf(appNo))
+                        .reason("Duplicate ApplicationNo already exists in database (row skipped)")
+                        .build());
+                continue;
+            }
+
+            Long tokenNo = c.getTokenNo();
+            if (tokenNo != null && existingTokenNos.contains(tokenNo)) {
+                counters[2]++;
+                allErrors.add(RowError.builder()
+                        .rowNumber(rowNum)
+                        .field("TokenNo")
+                        .rawValue(String.valueOf(tokenNo))
+                        .reason("Duplicate TokenNo already exists in database (row skipped)")
+                        .build());
+                continue;
+            }
+
+            toSave.add(c);
+        }
+
+        if (!toSave.isEmpty()) {
+            candidateRepository.saveAll(toSave);
+            counters[1] += toSave.size();
+            log.debug("Flushed batch. Batch size={}, savedNow={}, totalSaved={}",
+                    batchBuffer.size(), toSave.size(), counters[1]);
+        } else {
+            log.debug("Flushed batch. Batch size={}, savedNow=0 (all skipped)", batchBuffer.size());
+        }
+
+        batchBuffer.clear();
+        batchRowNums.clear();
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -363,8 +476,14 @@ public class CandidateServiceImpl implements CandidateService {
     @Override
     @Transactional(readOnly = true)
     public CandidateDetailsDto getCandidateDetailsByApplicationNo(long applicationNo) {
-        Candidate c = candidateRepository.findByApplicationNo(applicationNo)
-                .orElseThrow(() -> new NoSuchElementException("Candidate not found"));
+        List<Candidate> matches = candidateRepository.findAllByApplicationNoOrderByIdDesc(applicationNo);
+        if (matches.isEmpty()) {
+            throw new NoSuchElementException("Candidate not found");
+        }
+        if (matches.size() > 1) {
+            log.warn("Duplicate candidates found for applicationNo={}. Using most recent by id.", applicationNo);
+        }
+        Candidate c = matches.get(0);
 
         return CandidateDetailsDto.builder()
                 .applicationNo(c.getApplicationNo())
@@ -377,6 +496,26 @@ public class CandidateServiceImpl implements CandidateService {
                 .hasPhoto(c.getPhoto() != null && !c.getPhoto().isBlank())
                 .hasBiometric1(c.getBiometric1() != null && !c.getBiometric1().isBlank())
                 .hasBiometric2(c.getBiometric2() != null && !c.getBiometric2().isBlank())
+                .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public CandidateVerificationDataDto getCandidateVerificationData(long applicationNo) {
+        List<Candidate> matches = candidateRepository.findAllByApplicationNoOrderByIdDesc(applicationNo);
+        if (matches.isEmpty()) {
+            throw new NoSuchElementException("Candidate not found");
+        }
+        if (matches.size() > 1) {
+            log.warn("Duplicate candidates found for applicationNo={}. Using most recent by id for verification data.", applicationNo);
+        }
+        Candidate c = matches.get(0);
+
+        return CandidateVerificationDataDto.builder()
+                .applicationNo(c.getApplicationNo())
+                .photo(c.getPhoto())
+                .biometric1(c.getBiometric1())
+                .biometric2(c.getBiometric2())
                 .build();
     }
 
@@ -396,8 +535,15 @@ public class CandidateServiceImpl implements CandidateService {
             throw new IllegalArgumentException("biometric2 is required");
         }
 
-        Candidate c = candidateRepository.findByApplicationNo(request.getApplicationNo())
-                .orElseThrow(() -> new NoSuchElementException("Candidate not found"));
+        List<Candidate> matches = candidateRepository.findAllByApplicationNoOrderByIdDesc(request.getApplicationNo());
+        if (matches.isEmpty()) {
+            throw new NoSuchElementException("Candidate not found");
+        }
+        if (matches.size() > 1) {
+            log.warn("Duplicate candidates found for applicationNo={}. Using most recent by id for enrollment.",
+                    request.getApplicationNo());
+        }
+        Candidate c = matches.get(0);
 
         c.setPhoto(request.getPhoto());
         c.setBiometric1(request.getBiometric1());

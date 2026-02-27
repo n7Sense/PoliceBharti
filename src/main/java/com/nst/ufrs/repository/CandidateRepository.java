@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,6 +20,8 @@ public interface CandidateRepository extends JpaRepository<Candidate, Long> {
     Optional<Candidate> findByTokenNo(Long tokenNo);
 
     Optional<Candidate> findByApplicationNo(Long applicationNo);
+
+    List<Candidate> findAllByApplicationNoOrderByIdDesc(Long applicationNo);
 
     boolean existsByTokenNo(Long tokenNo);
 
@@ -46,4 +49,10 @@ public interface CandidateRepository extends JpaRepository<Candidate, Long> {
 
     @Query("SELECT COUNT(c) FROM Candidate c WHERE c.tokenNo IS NOT NULL")
     long countValidCandidates();
+
+    @Query("SELECT c.applicationNo FROM Candidate c WHERE c.applicationNo IN :appNos")
+    List<Long> findExistingApplicationNos(@Param("appNos") Collection<Long> appNos);
+
+    @Query("SELECT c.tokenNo FROM Candidate c WHERE c.tokenNo IN :tokenNos")
+    List<Long> findExistingTokenNos(@Param("tokenNos") Collection<Long> tokenNos);
 }

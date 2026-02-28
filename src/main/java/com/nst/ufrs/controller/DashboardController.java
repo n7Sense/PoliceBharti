@@ -46,4 +46,14 @@ public class DashboardController {
     public String physicalTest(Model model) {
         return "physical-test";
     }
+
+    @GetMapping("/appeal-1")
+    public String appeal1(Model model) {
+        return "appeal-1";
+    }
+
+    @GetMapping("/appeal-2")
+    public String appeal2(Model model) {
+        return "appeal-2";
+    }
 }

@@ -66,10 +66,20 @@ public class PhysicalTestService {
                     return created;
                 });
 
-        pt.setHeight(request.getHeight());
-        pt.setChest(request.getChest());
-        pt.setExpandedChest(request.getExpandedChest());
+        if (request.getHeight() != null) pt.setHeight(request.getHeight());
+        if (request.getChest() != null) pt.setChest(request.getChest());
+        if (request.getExpandedChest() != null) pt.setExpandedChest(request.getExpandedChest());
         pt.setRejectReason(normalizeReason(request.getRejectReason()));
+
+        if (request.getHeight1() != null) pt.setHeight1(request.getHeight1());
+        if (request.getChest1() != null) pt.setChest1(request.getChest1());
+        if (request.getExpandedChest1() != null) pt.setExpandedChest1(request.getExpandedChest1());
+        pt.setRejectReason1(normalizeReason(request.getRejectReason1()));
+
+        if (request.getHeight2() != null) pt.setHeight2(request.getHeight2());
+        if (request.getChest2() != null) pt.setChest2(request.getChest2());
+        if (request.getExpandedChest2() != null) pt.setExpandedChest2(request.getExpandedChest2());
+        pt.setRejectReason2(normalizeReason(request.getRejectReason2()));
 
         applyAutoStatusAndReason(candidate, pt);
 
@@ -147,7 +157,18 @@ public class PhysicalTestService {
             addHeader(table, "Exp Chest (cm)", hFont);
             addHeader(table, "Result / Reason", hFont);
 
-            addAttemptRow(table, "Main", pt.getHeight(), pt.getChest(), pt.getExpandedChest(), pt.getStatus(), pt.getRejectReason(), nFont);
+            // Main
+            if (pt.getHeight() != null || pt.getChest() != null || pt.getExpandedChest() != null) {
+                addAttemptRow(table, "Main", pt.getHeight(), pt.getChest(), pt.getExpandedChest(), pt.getStatus(), pt.getRejectReason(), nFont);
+            }
+            // Appeal 1
+            if (pt.getHeight1() != null || pt.getChest1() != null || pt.getExpandedChest1() != null) {
+                addAttemptRow(table, "Appeal 1", pt.getHeight1(), pt.getChest1(), pt.getExpandedChest1(), pt.getStatus1(), pt.getRejectReason1(), nFont);
+            }
+            // Appeal 2
+            if (pt.getHeight2() != null || pt.getChest2() != null || pt.getExpandedChest2() != null) {
+                addAttemptRow(table, "Appeal 2", pt.getHeight2(), pt.getChest2(), pt.getExpandedChest2(), pt.getStatus2(), pt.getRejectReason2(), nFont);
+            }
 
             document.add(table);
             document.close();
@@ -174,9 +195,25 @@ public class PhysicalTestService {
         }
 
         // Main
-        var main = evaluate(pt.getHeight(), pt.getChest(), pt.getExpandedChest(), minHeight);
-        pt.setStatus(main.pass);
-        if (pt.getRejectReason() == null || pt.getRejectReason().isBlank()) pt.setRejectReason(main.reason);
+        if (pt.getHeight() != null || pt.getChest() != null || pt.getExpandedChest() != null) {
+            var main = evaluate(pt.getHeight(), pt.getChest(), pt.getExpandedChest(), minHeight);
+            pt.setStatus(main.pass);
+            if (pt.getRejectReason() == null || pt.getRejectReason().isBlank()) pt.setRejectReason(main.reason);
+        }
+
+        // Appeal 1
+        if (pt.getHeight1() != null || pt.getChest1() != null || pt.getExpandedChest1() != null) {
+            var a1 = evaluate(pt.getHeight1(), pt.getChest1(), pt.getExpandedChest1(), minHeight);
+            pt.setStatus1(a1.pass);
+            if (pt.getRejectReason1() == null || pt.getRejectReason1().isBlank()) pt.setRejectReason1(a1.reason);
+        }
+
+        // Appeal 2
+        if (pt.getHeight2() != null || pt.getChest2() != null || pt.getExpandedChest2() != null) {
+            var a2 = evaluate(pt.getHeight2(), pt.getChest2(), pt.getExpandedChest2(), minHeight);
+            pt.setStatus2(a2.pass);
+            if (pt.getRejectReason2() == null || pt.getRejectReason2().isBlank()) pt.setRejectReason2(a2.reason);
+        }
     }
 
     private record Eval(boolean pass, String reason) {}
@@ -279,6 +316,16 @@ public class PhysicalTestService {
                 .expandedChest(pt.getExpandedChest())
                 .status(pt.getStatus())
                 .rejectReason(pt.getRejectReason())
+                .height1(pt.getHeight1())
+                .chest1(pt.getChest1())
+                .expandedChest1(pt.getExpandedChest1())
+                .status1(pt.getStatus1())
+                .rejectReason1(pt.getRejectReason1())
+                .height2(pt.getHeight2())
+                .chest2(pt.getChest2())
+                .expandedChest2(pt.getExpandedChest2())
+                .status2(pt.getStatus2())
+                .rejectReason2(pt.getRejectReason2())
                 .build();
     }
 }

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head :: head('Appeal 2')"></head>
+<body class="bg-dark text-light">
+<div th:replace="fragments/header :: header"></div>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-3 col-lg-2 p-0">
+            <div th:replace="fragments/sidebar :: sidebar('appeal2')"></div>
+        </div>
+        <div class="col-md-9 col-lg-10 p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h3 class="mb-0 fw-bold">Appeal 2 – Physical Test</h3>
+                    <p class="text-secondary mb-0 small">
+                        Fetch candidate, view Physical Test & Appeal 1 results, then record Appeal 2 measurements (no verification).
+                    </p>
+                </div>
+            </div>
+
+            <div id="appeal2AlertContainer"></div>
+
+            <div class="row g-4">
+                <!-- Candidate Details -->
+                <div class="col-12 col-xl-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-primary text-white d-flex align-items-center">
+                            <i class="bi bi-person-vcard-fill me-2"></i>
+                            <span class="fw-semibold">Candidate Details</span>
+                        </div>
+                        <div class="card-body bg-dark-subtle">
+                            <form id="appeal2Form" class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="applicationNo" class="form-label fw-semibold">
+                                        Application No <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" id="applicationNo" placeholder="Enter Application No">
+                                    <div class="form-text">Press Enter or Tab to fetch candidate.</div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="mobileNo" class="form-label fw-semibold">Mobile No</label>
+                                    <input type="text" class="form-control" id="mobileNo" readonly>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="post" class="form-label fw-semibold">Post</label>
+                                    <input type="text" class="form-control" id="post" readonly>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="gender" class="form-label fw-semibold">Gender</label>
+                                    <input type="text" class="form-control" id="gender" readonly>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="dob" class="form-label fw-semibold">DOB</label>
+                                    <input type="text" class="form-control" id="dob" readonly>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="applicationCategory" class="form-label fw-semibold">Application Category</label>
+                                    <input type="text" class="form-control" id="applicationCategory" readonly>
+                                </div>
+
+                                <div class="col-12">
+                                    <label for="parallelReservation" class="form-label fw-semibold">Parallel Reservation</label>
+                                    <input type="text" class="form-control" id="parallelReservation" readonly>
+                                </div>
+
+                                <div class="col-12 d-flex justify-content-between align-items-center mt-3">
+                                    <button type="button" class="btn btn-outline-light btn-sm" id="resetBtn">
+                                        <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
+                                    </button>
+                                    <span class="text-secondary small">
+                                        Step 1: Enter Application No and fetch candidate.
+                                    </span>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- History + Appeal 2 Measurements -->
+                <div class="col-12 col-xl-6">
+                    <div class="row g-4">
+                        <!-- History -->
+                        <div class="col-12">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-header bg-secondary text-white d-flex align-items-center">
+                                    <i class="bi bi-clock-history me-2"></i>
+                                    <span class="fw-semibold">Previous Results</span>
+                                </div>
+                                <div class="card-body bg-dark-subtle small">
+                                    <div><span class="fw-semibold">Physical Test:</span> <span id="mainResultText">N/A</span></div>
+                                    <div class="mt-1"><span class="fw-semibold">Reason:</span> <span id="mainReasonText">N/A</span></div>
+                                    <hr class="border-secondary" />
+                                    <div><span class="fw-semibold">Appeal 1:</span> <span id="appeal1ResultText">N/A</span></div>
+                                    <div class="mt-1"><span class="fw-semibold">Reason 1:</span> <span id="appeal1ReasonText">N/A</span></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Appeal 2 -->
+                        <div class="col-12">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-header bg-secondary text-white d-flex align-items-center">
+                                    <i class="bi bi-rulers me-2"></i>
+                                    <span class="fw-semibold">Appeal 2 Measurements</span>
+                                </div>
+                                <div class="card-body bg-dark-subtle">
+                                    <div class="row g-3 align-items-end">
+                                        <div class="col-12 col-md-4">
+                                            <label for="height2" class="form-label fw-semibold">Height 2 (cm)</label>
+                                            <input type="number" step="0.1" class="form-control" id="height2">
+                                        </div>
+                                        <div class="col-12 col-md-4">
+                                            <label for="chest2" class="form-label fw-semibold">Chest 2 (cm)</label>
+                                            <input type="number" step="0.1" class="form-control" id="chest2">
+                                        </div>
+                                        <div class="col-12 col-md-4">
+                                            <label for="expandedChest2" class="form-label fw-semibold">Expanded 2 (cm)</label>
+                                            <input type="number" step="0.1" class="form-control" id="expandedChest2">
+                                        </div>
+                                        <div class="col-12">
+                                            <label for="rejectReason2" class="form-label fw-semibold">Reason 2 (optional)</label>
+                                            <textarea class="form-control" id="rejectReason2" rows="2"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex justify-content-end gap-2 mt-3">
+                                        <button type="button" class="btn btn-outline-light" id="downloadPdfBtn" disabled>
+                                            <i class="bi bi-file-earmark-pdf me-1"></i> Download PDF
+                                        </button>
+                                        <button type="button" class="btn btn-success" id="saveAppeal2Btn" disabled>
+                                            <i class="bi bi-check2-circle me-1"></i> Save Appeal 2
+                                        </button>
+                                    </div>
+                                    <div class="form-text text-secondary mt-2">
+                                        Limits: Height ≥ 165 cm, Chest ≥ 79 cm, Expanded ≥ 84 cm. (SRPF may vary.)
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="fragments/footer :: footer"></div>
+<script th:src="@{/js/appeal-2.js}"></script>
+</body>
+</html>
+

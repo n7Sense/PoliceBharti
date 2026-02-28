@@ -1,27 +1,33 @@
 package com.nst.ufrs.controller;
 
+import com.nst.ufrs.repository.CandidateRepository;
 import jakarta.servlet.http.HttpSession;
-import org.springframework.security.access.prepost.PreAuthorize;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
+@RequiredArgsConstructor
 public class DashboardController {
+
+    private final CandidateRepository candidateRepository;
 
     @GetMapping("/dashboard")
     public String genericDashboard(Model model, HttpSession httpSession) {
 
-        long userID = (Long) httpSession.getAttribute("userID");
+        Long userID = (Long) httpSession.getAttribute("userID");
         String name = (String) httpSession.getAttribute("name");
         String email = (String) httpSession.getAttribute("email");
 
+        long totalUploaded = candidateRepository.count();
+
         model.addAttribute("activePage", "dashboard");
-        model.addAttribute("totalUploaded", 100);
-        model.addAttribute("totalPresent", 250);
-        model.addAttribute("totalAbsent", 350);
-        model.addAttribute("totalApproved", 25);
-        model.addAttribute("totalRejected", 36);
+        model.addAttribute("totalUploaded", totalUploaded);
+        model.addAttribute("totalPresent", 0);
+        model.addAttribute("totalAbsent", 0);
+        model.addAttribute("totalApproved", 0);
+        model.addAttribute("totalRejected", 0);
 
         return "dashboard";
     }

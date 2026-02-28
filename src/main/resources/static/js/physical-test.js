@@ -47,6 +47,9 @@ document.addEventListener("DOMContentLoaded", function () {
     const chestEl = document.getElementById("chest");
     const expandedChestEl = document.getElementById("expandedChest");
     const savePhysicalTestBtn = document.getElementById("savePhysicalTestBtn");
+    const downloadPdfBtn = document.getElementById("downloadPdfBtn");
+
+    const rejectReasonEl = document.getElementById("rejectReason");
 
     let candidateLoaded = false;
     let verificationPassed = false;
@@ -80,6 +83,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (heightEl) heightEl.value = "";
         if (chestEl) chestEl.value = "";
         if (expandedChestEl) expandedChestEl.value = "";
+        if (rejectReasonEl) rejectReasonEl.value = "";
     }
 
     function clearVerification() {
@@ -102,12 +106,26 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         if (photoPlaceholderEl) photoPlaceholderEl.style.display = "block";
         if (savePhysicalTestBtn) savePhysicalTestBtn.disabled = true;
+        if (downloadPdfBtn) downloadPdfBtn.disabled = true;
     }
 
     function formatDob(dob) {
         if (!dob) return "";
-        // expecting yyyy-MM-dd from JSON
-        return dob;
+        // Can be "yyyy-MM-dd" OR [yyyy,mm,dd] OR {year,month,day}
+        if (typeof dob === "string") return dob;
+        if (Array.isArray(dob) && dob.length >= 3) {
+            const [y, m, d] = dob;
+            if (!y || !m || !d) return "";
+            return `${String(y).padStart(4, "0")}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+        }
+        if (typeof dob === "object") {
+            const y = dob.year;
+            const m = dob.monthValue ?? dob.month;
+            const d = dob.dayOfMonth ?? dob.day;
+            if (!y || !m || !d) return "";
+            return `${String(y).padStart(4, "0")}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+        }
+        return "";
     }
 
     async function fetchPhysicalTest(appNo) {
@@ -124,6 +142,9 @@ document.addEventListener("DOMContentLoaded", function () {
             if (heightEl) heightEl.value = data.height ?? "";
             if (chestEl) chestEl.value = data.chest ?? "";
             if (expandedChestEl) expandedChestEl.value = data.expandedChest ?? "";
+            if (rejectReasonEl) rejectReasonEl.value = data.rejectReason ?? "";
+
+            if (downloadPdfBtn) downloadPdfBtn.disabled = false;
         } catch (e) {
             console.error(e);
         }
@@ -454,7 +475,8 @@ document.addEventListener("DOMContentLoaded", function () {
             applicationNo: Number(appNoText),
             height: heightEl && heightEl.value !== "" ? Number(heightEl.value) : null,
             chest: chestEl && chestEl.value !== "" ? Number(chestEl.value) : null,
-            expandedChest: expandedChestEl && expandedChestEl.value !== "" ? Number(expandedChestEl.value) : null
+            expandedChest: expandedChestEl && expandedChestEl.value !== "" ? Number(expandedChestEl.value) : null,
+            rejectReason: rejectReasonEl ? (rejectReasonEl.value || null) : null
         };
 
         try {
@@ -476,6 +498,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             showAlert("success", (data && data.message) ? data.message : "Physical test saved successfully");
+            if (downloadPdfBtn) downloadPdfBtn.disabled = false;
         } catch (e) {
             console.error(e);
             showAlert("danger", e.message || "Failed to save physical test.");
@@ -496,6 +519,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (savePhysicalTestBtn) {
         savePhysicalTestBtn.addEventListener("click", () => savePhysicalTest());
+    }
+
+    if (downloadPdfBtn) {
+        downloadPdfBtn.addEventListener("click", () => {
+            const appNoText = applicationNoEl.value.trim();
+            if (!appNoText) {
+                showAlert("danger", "Application No is required.");
+                return;
+            }
+            window.location.href = `/api/v1/physical-tests/report?applicationNo=${encodeURIComponent(appNoText)}`;
+        });
     }
 
     if (resetBtn) {

@@ -34,11 +34,11 @@ public class Candidate {
     private String username;
 
     /** Primary key from Excel - must be numeric (Long) */
-    @Column(name = "token_no")
+    @Column(name = "token_no",unique = true)
     private Long tokenNo;
 
     /** Must be numeric (Long) */
-    @Column(name = "application_no")
+    @Column(name = "application_no", unique = true)
     private Long applicationNo;
 
     @Column(name = "exam_fee")

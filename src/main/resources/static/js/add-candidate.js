@@ -75,8 +75,21 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function formatDob(dob) {
         if (!dob) return "";
-        // expecting yyyy-MM-dd from JSON
-        return dob;
+        // Can be "yyyy-MM-dd" OR [yyyy,mm,dd] OR {year,month,day}
+        if (typeof dob === "string") return dob;
+        if (Array.isArray(dob) && dob.length >= 3) {
+            const [y, m, d] = dob;
+            if (!y || !m || !d) return "";
+            return `${String(y).padStart(4, "0")}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+        }
+        if (typeof dob === "object") {
+            const y = dob.year;
+            const m = dob.monthValue ?? dob.month;
+            const d = dob.dayOfMonth ?? dob.day;
+            if (!y || !m || !d) return "";
+            return `${String(y).padStart(4, "0")}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+        }
+        return "";
     }
 
     async function fetchCandidateByApplicationNo(appNo) {

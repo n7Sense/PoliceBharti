@@ -43,6 +43,9 @@ public class PhysicalTest {
     @Column(name = "status")
     private Boolean status;
 
+    @Column(name = "reject_reason", length = 500)
+    private String rejectReason;
+
     /**
      *  If Candidate Reject in Physical Test
      * Required
@@ -62,6 +65,9 @@ public class PhysicalTest {
     @Column(name = "status1")
     private Boolean status1;
 
+    @Column(name = "reject_reason1", length = 500)
+    private String rejectReason1;
+
     /**
      * iF Candidate rejected in Appeal 1 So he will go for Appeal 2
      */
@@ -76,5 +82,8 @@ public class PhysicalTest {
 
     @Column(name = "status2")
     private Boolean status2;
+
+    @Column(name = "reject_reason2", length = 500)
+    private String rejectReason2;
 
 }

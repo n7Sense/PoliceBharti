@@ -94,27 +94,35 @@
                                     <span class="fw-semibold">Physical Measurements</span>
                                 </div>
                                 <div class="card-body bg-dark-subtle">
-                                    <div class="row g-3">
-                                        <div class="col-12">
-                                            <label for="height" class="form-label fw-semibold">Height</label>
-                                            <input type="number" step="0.01" class="form-control" id="height" placeholder="e.g. 5.6">
+                                    <div class="row g-3 align-items-end">
+                                        <div class="col-12 col-md-4">
+                                            <label for="height" class="form-label fw-semibold">Height (cm)</label>
+                                            <input type="number" step="0.1" class="form-control" id="height" placeholder="Min 165">
+                                        </div>
+                                        <div class="col-12 col-md-4">
+                                            <label for="chest" class="form-label fw-semibold">Chest (cm)</label>
+                                            <input type="number" step="0.1" class="form-control" id="chest" placeholder="Min 79">
+                                        </div>
+                                        <div class="col-12 col-md-4">
+                                            <label for="expandedChest" class="form-label fw-semibold">Expanded Chest (cm)</label>
+                                            <input type="number" step="0.1" class="form-control" id="expandedChest" placeholder="Min 84">
                                         </div>
                                         <div class="col-12">
-                                            <label for="chest" class="form-label fw-semibold">Chest</label>
-                                            <input type="number" step="0.01" class="form-control" id="chest" placeholder="e.g. 30">
-                                        </div>
-                                        <div class="col-12">
-                                            <label for="expandedChest" class="form-label fw-semibold">Expanded Chest</label>
-                                            <input type="number" step="0.01" class="form-control" id="expandedChest" placeholder="e.g. 32">
-                                        </div>
-                                        <div class="col-12 d-flex">
-                                            <button type="button" class="btn btn-success ms-auto" id="savePhysicalTestBtn">
-                                                <i class="bi bi-check2-circle me-1"></i> Save Physical Test
-                                            </button>
+                                            <label for="rejectReason" class="form-label fw-semibold">Reason (optional)</label>
+                                            <textarea class="form-control" id="rejectReason" rows="2" placeholder="If rejected, write reason (optional)"></textarea>
                                         </div>
                                     </div>
+
+                                    <div class="d-flex justify-content-end gap-2 mt-3">
+                                        <button type="button" class="btn btn-outline-light" id="downloadPdfBtn" disabled>
+                                            <i class="bi bi-file-earmark-pdf me-1"></i> Download PDF
+                                        </button>
+                                        <button type="button" class="btn btn-success" id="savePhysicalTestBtn" disabled>
+                                            <i class="bi bi-check2-circle me-1"></i> Save Physical Test
+                                        </button>
+                                    </div>
                                     <div class="form-text text-secondary mt-2">
-                                        Enter measurements and save. Candidate must be fetched first.
+                                        Limits: Height ≥ 165 cm, Chest ≥ 79 cm, Expanded ≥ 84 cm. (SRPF may vary.)
                                     </div>
                                 </div>
                             </div>

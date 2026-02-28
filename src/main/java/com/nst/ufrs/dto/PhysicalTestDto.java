@@ -16,5 +16,6 @@ public class PhysicalTestDto {
     private Float chest;
     private Float expandedChest;
     private Boolean status;
+    private String rejectReason;
 }
 

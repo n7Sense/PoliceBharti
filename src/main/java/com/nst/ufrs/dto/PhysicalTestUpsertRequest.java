@@ -14,5 +14,8 @@ public class PhysicalTestUpsertRequest {
     private Float height;
     private Float chest;
     private Float expandedChest;
+
+    // optional manual reason override (else auto-generated)
+    private String rejectReason;
 }
 

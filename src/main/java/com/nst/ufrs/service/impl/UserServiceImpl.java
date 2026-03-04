@@ -1,10 +1,11 @@
-package com.nst.ufrs.service;
+package com.nst.ufrs.service.impl;
 
 import com.nst.ufrs.dto.RegistrationDto;
 import com.nst.ufrs.entity.Role;
 import com.nst.ufrs.entity.User;
 import com.nst.ufrs.repository.RoleRepository;
 import com.nst.ufrs.repository.UserRepository;
+import com.nst.ufrs.service.UserService;
 import jakarta.persistence.EntityExistsException;
 import jakarta.validation.ValidationException;
 import org.springframework.security.crypto.password.PasswordEncoder;

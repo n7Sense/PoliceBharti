@@ -1,4 +1,4 @@
-package com.nst.ufrs.service;
+package com.nst.ufrs.service.impl;
 
 import com.nst.ufrs.domain.Candidate;
 import com.nst.ufrs.domain.PhysicalTest;

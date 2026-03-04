@@ -23,6 +23,9 @@ public interface CandidateRepository extends JpaRepository<Candidate, Long> {
 
     List<Candidate> findAllByApplicationNoOrderByIdDesc(Long applicationNo);
 
+    List<Candidate> findAllByAttendance(Boolean attendance);
+    List<Candidate> findAllByStatus(Boolean attendance);
+
     boolean existsByTokenNo(Long tokenNo);
 
     boolean existsByApplicationNo(Long applicationNo);

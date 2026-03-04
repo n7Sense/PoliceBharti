@@ -1,4 +1,4 @@
-package com.nst.ufrs.service;
+package com.nst.ufrs.service.impl;
 
 import com.nst.ufrs.domain.Candidate;
 import com.nst.ufrs.dto.CandidateDetailsDto;
@@ -10,6 +10,7 @@ import com.nst.ufrs.dto.ExcelUploadResponse.RowError;
 import com.nst.ufrs.exception.ExcelParseException;
 import com.nst.ufrs.exception.InvalidFileException;
 import com.nst.ufrs.repository.CandidateRepository;
+import com.nst.ufrs.service.CandidateService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.openxml4j.opc.OPCPackage;
@@ -38,6 +39,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -70,11 +73,9 @@ public class CandidateServiceImpl implements CandidateService {
             final Set<Long> seenTokenNos = new HashSet<>();
             int[] counters = {0, 0, 0}; // [totalRows, savedCount, skippedCount]
 
-            log.info("Starting SAX Excel upload: filename={}, size={}B",
-                    file.getOriginalFilename(), file.getSize());
+            log.info("Starting SAX Excel upload: filename={}, size={}B", file.getOriginalFilename(), file.getSize());
 
-            try (InputStream is = file.getInputStream();
-                 OPCPackage pkg = OPCPackage.open(is)) {
+            try (InputStream is = file.getInputStream(); OPCPackage pkg = OPCPackage.open(is)) {
 
                 XSSFReader       reader        = new XSSFReader(pkg);
                 SharedStrings    sharedStrings = reader.getSharedStringsTable();
@@ -393,26 +394,54 @@ public class CandidateServiceImpl implements CandidateService {
         catch (NumberFormatException e) { return null; }
     }
 
+    /**
+     * Excel / POI DataFormatter often returns dates with 2-digit year (e.g. 02/05/85).
+     * This normalizes such strings to 4-digit year: 00-29 → 2000-2029, 30-99 → 1930-1999,
+     * so that parseDate can parse them correctly as LocalDate.
+     */
+    private static final Pattern DATE_2_DIGIT_YEAR = Pattern.compile("^(\\d{1,2})([/-])(\\d{1,2})\\2(\\d{2})$");
+
+    private static String normalizeDateWith2DigitYear(String val) {
+        if (val == null || val.isBlank()) return val;
+        val = val.trim();
+        Matcher m = DATE_2_DIGIT_YEAR.matcher(val);
+        if (!m.matches()) return val;
+        int yy = Integer.parseInt(m.group(4));
+        int yyyy = (yy <= 29) ? (2000 + yy) : (1900 + yy);
+        String sep = m.group(2);
+        return m.group(1) + sep + m.group(3) + sep + yyyy;
+    }
+
     private java.time.LocalDate parseDate(String val) {
         if (val == null || val.isBlank()) return null;
+        String trimmed = val.trim();
         try {
-            // POI DataFormatter gives dates as "dd-MMM-yyyy" or "d/M/yyyy" etc.
             for (java.time.format.DateTimeFormatter fmt : DATE_FORMATS) {
-                try { return java.time.LocalDate.parse(val.trim(), fmt); }
+                try { return java.time.LocalDate.parse(trimmed, fmt); }
                 catch (Exception ignored) {}
+            }
+            // Excel often formats dates with 2-digit year (e.g. 02/05/85). Normalize to 4-digit and retry.
+            String normalized = normalizeDateWith2DigitYear(trimmed);
+            if (!normalized.equals(trimmed)) {
+                for (java.time.format.DateTimeFormatter fmt : DATE_FORMATS) {
+                    try { return java.time.LocalDate.parse(normalized, fmt); }
+                    catch (Exception ignored) {}
+                }
             }
         } catch (Exception ignored) {}
         return null;
     }
 
+    /** 4-digit year formatters. 2-digit year strings (e.g. 02/05/85) are normalized to 4-digit in parseDate first. */
     private static final List<java.time.format.DateTimeFormatter> DATE_FORMATS = List.of(
+            java.time.format.DateTimeFormatter.ofPattern("M/d/yyyy"),
+            java.time.format.DateTimeFormatter.ofPattern("MM/dd/yyyy"),
             java.time.format.DateTimeFormatter.ofPattern("d/M/yyyy"),
-            java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy"),
             java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"),
+            java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy"),
             java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd"),
             java.time.format.DateTimeFormatter.ofPattern("d-MMM-yyyy"),
-            java.time.format.DateTimeFormatter.ofPattern("dd-MMM-yyyy"),
-            java.time.format.DateTimeFormatter.ofPattern("M/d/yyyy")
+            java.time.format.DateTimeFormatter.ofPattern("dd-MMM-yyyy")
     );
 
     private void validateFile(MultipartFile file) {

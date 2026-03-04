@@ -1,4 +1,4 @@
-package com.nst.ufrs.service;
+package com.nst.ufrs.service.impl;
 
 import com.nst.ufrs.entity.Role;
 import com.nst.ufrs.entity.User;

@@ -1,12 +1,12 @@
 package com.nst.ufrs.config;
 
 import com.nst.ufrs.repository.UserRepository;
+import com.nst.ufrs.service.impl.RunningNumberServiceImpl;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -22,6 +22,9 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
     @Autowired
     UserRepository userRepository;
 
+    @Autowired
+    RunningNumberServiceImpl runningNumberService;
+
     @Override
     public void onAuthenticationSuccess(
             HttpServletRequest request,
@@ -36,6 +39,13 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
         request.getSession().setAttribute("userID", user1.get().getId());
         request.getSession().setAttribute("name", user1.get().getName());
         request.getSession().setAttribute("email", user1.get().getEmail());
+
+        // 🔹 Temporary hardcoded EventLocationId
+        Long eventLocationId = 1L;
+        request.getSession().setAttribute("eventLocationId", eventLocationId);
+
+        // 🔹 Call RunningNumber init on login
+        runningNumberService.initializeRunningNumber(eventLocationId);
 
         /*for (GrantedAuthority authority : authentication.getAuthorities()) {
             String role = authority.getAuthority();

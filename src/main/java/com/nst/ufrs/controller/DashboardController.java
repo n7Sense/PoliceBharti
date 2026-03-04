@@ -19,15 +19,20 @@ public class DashboardController {
         Long userID = (Long) httpSession.getAttribute("userID");
         String name = (String) httpSession.getAttribute("name");
         String email = (String) httpSession.getAttribute("email");
+        Long eventLocationId = (Long) httpSession.getAttribute("eventLocationId");
 
         long totalUploaded = candidateRepository.count();
+        long totalPresent = candidateRepository.findAllByAttendance(true).size();
+        long totalAbsent = candidateRepository.findAllByAttendance(false).size();
+        long totalApproved = candidateRepository.findAllByStatus(true).size();
+        long totalRejected = candidateRepository.findAllByStatus(false).size();
 
         model.addAttribute("activePage", "dashboard");
         model.addAttribute("totalUploaded", totalUploaded);
-        model.addAttribute("totalPresent", 0);
-        model.addAttribute("totalAbsent", 0);
-        model.addAttribute("totalApproved", 0);
-        model.addAttribute("totalRejected", 0);
+        model.addAttribute("totalPresent", totalPresent);
+        model.addAttribute("totalAbsent", totalAbsent);
+        model.addAttribute("totalApproved", totalApproved);
+        model.addAttribute("totalRejected", totalRejected);
 
         return "dashboard";
     }

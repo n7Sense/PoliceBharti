@@ -1,10 +1,6 @@
 package com.nst.ufrs.controller;
 
-import com.nst.ufrs.dto.CandidateDetailsDto;
-import com.nst.ufrs.dto.CandidateEnrollmentRequest;
-import com.nst.ufrs.dto.CandidateListItemDto;
-import com.nst.ufrs.dto.CandidateVerificationDataDto;
-import com.nst.ufrs.dto.ExcelUploadResponse;
+import com.nst.ufrs.dto.*;
 import com.nst.ufrs.service.CandidateService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -68,8 +64,7 @@ public class CandidateController {
             @Parameter(description = "Excel (.xlsx) file containing candidate records", required = true)
             @RequestParam("file") MultipartFile file) {
 
-        log.info("Received Excel upload request: filename={}, size={}B",
-                file.getOriginalFilename(), file.getSize());
+        log.info("Received Excel upload request: filename={}, size={}B", file.getOriginalFilename(), file.getSize());
 
         ExcelUploadResponse response = candidateService.uploadCandidatesFromExcel(file);
 

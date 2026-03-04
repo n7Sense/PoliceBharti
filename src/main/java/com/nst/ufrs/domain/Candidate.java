@@ -302,6 +302,9 @@ public class Candidate {
     @Column(name = "status")
     private Boolean status = false;
 
+    @Column(name = "running_number")
+    private Integer runningNumber;
+
 
     @PrePersist
     protected void onCreate() {

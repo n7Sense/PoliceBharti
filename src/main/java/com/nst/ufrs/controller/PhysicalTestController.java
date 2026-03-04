@@ -2,7 +2,7 @@ package com.nst.ufrs.controller;
 
 import com.nst.ufrs.dto.PhysicalTestDto;
 import com.nst.ufrs.dto.PhysicalTestUpsertRequest;
-import com.nst.ufrs.service.PhysicalTestService;
+import com.nst.ufrs.service.impl.PhysicalTestService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;

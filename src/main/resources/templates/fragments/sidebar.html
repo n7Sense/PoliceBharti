@@ -49,15 +49,6 @@
         </li>
 
         <li class="nav-item mb-1">
-            <a th:href="@{/assign-chest-number}"
-               class="nav-link d-flex align-items-center text-white"
-               th:classappend="${activePage} == 'assignChest' ? ' active' : ''">
-                <i class="bi bi-person-badge-fill me-2"></i>
-                <span>Assign Chest Number</span>
-            </a>
-        </li>
-
-        <li class="nav-item mb-1">
             <a th:href="@{/appeal-1}"
                class="nav-link d-flex align-items-center text-white"
                th:classappend="${activePage} == 'appeal1' ? ' active' : ''">
@@ -72,6 +63,24 @@
                th:classappend="${activePage} == 'appeal2' ? ' active' : ''">
                 <i class="bi bi-flag-fill me-2"></i>
                 <span>Appeal 2</span>
+            </a>
+        </li>
+
+        <li class="nav-item mb-1">
+            <a th:href="@{/assign-chest-number}"
+               class="nav-link d-flex align-items-center text-white"
+               th:classappend="${activePage} == 'assignChest' ? ' active' : ''">
+                <i class="bi bi-person-badge-fill me-2"></i>
+                <span>Assign Chest Number</span>
+            </a>
+        </li>
+
+        <li class="nav-item mb-1">
+            <a th:href="@{/assign-running-number}"
+               class="nav-link d-flex align-items-center text-white"
+               th:classappend="${activePage} == 'assignRunningNumber' ? ' active' : ''">
+                <i class="bi bi-hash me-2"></i>
+                <span>Assign Running Number</span>
             </a>
         </li>
     </ul>

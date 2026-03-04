@@ -1,9 +1,10 @@
-package com.nst.ufrs.service;
+package com.nst.ufrs.service.impl;
 
 import com.nst.ufrs.entity.PasswordResetToken;
 import com.nst.ufrs.entity.User;
 import com.nst.ufrs.repository.PasswordResetTokenRepository;
 import com.nst.ufrs.repository.UserRepository;
+import com.nst.ufrs.service.PasswordResetTokenService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

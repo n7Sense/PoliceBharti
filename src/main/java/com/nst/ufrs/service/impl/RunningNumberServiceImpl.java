@@ -40,7 +40,7 @@ public class RunningNumberServiceImpl {
         LocalDate today = LocalDate.now();
 
         // Latest batch for this location
-        Optional<BatchMaster> latestBatch = batchRepo.findTopByEventLocationIdOrderByIdDesc(eventLocationId);
+        Optional<BatchMaster> latestBatch = batchRepo.findTopByEventLocation_IdOrderByIdDesc(eventLocationId);
 
         Optional<GlobalRunningNumber> existingGlobal = globalRepo.findByEventLocationId(eventLocationId);
 

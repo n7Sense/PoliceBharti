@@ -61,4 +61,16 @@ public class DashboardController {
     public String appeal2(Model model) {
         return "appeal-2";
     }
+
+    @GetMapping("/assign-running-number")
+    public String assignRunningNumber(Model model) {
+        model.addAttribute("activePage", "assignRunningNumber");
+        return "assign-running-number";
+    }
+
+    @GetMapping("/assign-chest-number")
+    public String assignChestNumber(Model model) {
+        model.addAttribute("activePage", "assignChest");
+        return "assign-chest-number";
+    }
 }

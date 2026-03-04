@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AssignRunningNumberResultDto {
+
     private boolean success;
     private String message;
     /** Assigned running number when success */

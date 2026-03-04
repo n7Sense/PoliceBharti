@@ -37,6 +37,7 @@ public class AssignRunningNumberController {
         return name != null ? name : "User";
     }
 
+
     @GetMapping(value = "/page-data", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AssignPageDataDto> getPageData(HttpSession session) {
         Long eventLocationId = getEventLocationId(session);

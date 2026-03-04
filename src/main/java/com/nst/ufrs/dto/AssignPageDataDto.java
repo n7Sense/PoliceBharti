@@ -12,6 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AssignPageDataDto {
+
     /** Batches for dropdown: either [batch locked by current user] or all unlocked batches */
     private List<AssignBatchDto> batches;
     /** Next running number to assign (from GlobalRunningNumber) */

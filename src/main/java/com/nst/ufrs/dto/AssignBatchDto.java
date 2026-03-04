@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AssignBatchDto {
+
     private Long id;
     private Integer batchId;
     private String batchCode;

@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LockBatchResultDto {
+
     private boolean success;
     /** When success is false: name of user who already locked the batch */
     private String lockedByUserName;

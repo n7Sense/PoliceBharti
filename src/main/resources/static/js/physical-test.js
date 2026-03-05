@@ -3,6 +3,7 @@
 // - fetch existing physical test (if any)
 // - save height/chest/expandedChest as 1:1 PhysicalTest linked to Candidate
 
+
 document.addEventListener("DOMContentLoaded", function () {
     const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute("content");
     const csrfHeaderName = document.querySelector('meta[name="_csrf_header"]')?.getAttribute("content");

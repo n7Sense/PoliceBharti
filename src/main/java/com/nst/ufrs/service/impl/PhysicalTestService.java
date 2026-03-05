@@ -82,6 +82,7 @@ public class PhysicalTestService {
         pt.setRejectReason2(normalizeReason(request.getRejectReason2()));
 
         applyAutoStatusAndReason(candidate, pt);
+        updateCandidateStatusFromPhysicalTest(candidate, pt);
 
         PhysicalTest saved = physicalTestRepository.save(pt);
         return toDto(saved);
@@ -247,6 +248,33 @@ public class PhysicalTestService {
         }
 
         return new Eval(ok, ok ? "PASS" : reason.toString().trim());
+    }
+
+    private void updateCandidateStatusFromPhysicalTest(Candidate candidate, PhysicalTest pt) {
+        if (candidate == null || pt == null) return;
+
+        Boolean derived = deriveFinalAttemptStatus(pt);
+        if (derived == null) return;
+
+        candidate.setStatus(derived);
+        candidateRepository.save(candidate);
+    }
+
+    /**
+     * Derive "final" physical test status based on the latest attempt
+     * that has been entered (Appeal 2 > Appeal 1 > Main).
+     */
+    private Boolean deriveFinalAttemptStatus(PhysicalTest pt) {
+        if (pt.getHeight2() != null || pt.getChest2() != null || pt.getExpandedChest2() != null) {
+            return pt.getStatus2();
+        }
+        if (pt.getHeight1() != null || pt.getChest1() != null || pt.getExpandedChest1() != null) {
+            return pt.getStatus1();
+        }
+        if (pt.getHeight() != null || pt.getChest() != null || pt.getExpandedChest() != null) {
+            return pt.getStatus();
+        }
+        return null;
     }
 
     private String normalizeReason(String r) {

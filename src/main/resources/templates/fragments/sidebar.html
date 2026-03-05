@@ -49,6 +49,15 @@
         </li>
 
         <li class="nav-item mb-1">
+            <a th:href="@{/shotput}"
+               class="nav-link d-flex align-items-center text-white"
+               th:classappend="${activePage} == 'shotput' ? ' active' : ''">
+                <i class="bi bi-bullseye me-2"></i>
+                <span>Shotput</span>
+            </a>
+        </li>
+
+        <li class="nav-item mb-1">
             <a th:href="@{/appeal-1}"
                class="nav-link d-flex align-items-center text-white"
                th:classappend="${activePage} == 'appeal1' ? ' active' : ''">

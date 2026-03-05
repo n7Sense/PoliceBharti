@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head :: head('Shotput')"></head>
+<body class="bg-dark text-light">
+<div th:replace="fragments/header :: header"></div>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-3 col-lg-2 p-0">
+            <div th:replace="fragments/sidebar :: sidebar('shotput')"></div>
+        </div>
+
+        <div class="col-md-9 col-lg-10 p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h3 class="mb-0 fw-bold">Shotput</h3>
+                    <p class="text-secondary mb-0 small">
+                        Fetch candidate by Application No and enter up to three attempts for shotput distance (in meters).
+                        Marks and highest distance/marks are calculated automatically.
+                    </p>
+                </div>
+                <button type="button" class="btn btn-outline-light btn-sm" id="printShotputBtn" disabled>
+                    <i class="bi bi-printer me-1"></i> Print Shotput Result
+                </button>
+            </div>
+
+            <div id="shotputAlertContainer"></div>
+
+            <div class="row g-4">
+                <!-- Candidate Details -->
+                <div class="col-12 col-xl-7">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-primary text-white d-flex align-items-center">
+                            <i class="bi bi-person-vcard-fill me-2"></i>
+                            <span class="fw-semibold">Candidate Details</span>
+                        </div>
+                        <div class="card-body bg-dark-subtle">
+                            <form id="shotputForm" class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="applicationNo" class="form-label fw-semibold">
+                                        Application No <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" id="applicationNo" placeholder="Enter Application No">
+                                    <div class="form-text">Press Enter or Tab to fetch candidate.</div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="mobileNo" class="form-label fw-semibold">Mobile No</label>
+                                    <input type="text" class="form-control" id="mobileNo" readonly>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="post" class="form-label fw-semibold">Post</label>
+                                    <input type="text" class="form-control" id="post" readonly>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="gender" class="form-label fw-semibold">Gender</label>
+                                    <input type="text" class="form-control" id="gender" readonly>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="dob" class="form-label fw-semibold">DOB</label>
+                                    <input type="text" class="form-control" id="dob" readonly>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="applicationCategory" class="form-label fw-semibold">Application Category</label>
+                                    <input type="text" class="form-control" id="applicationCategory" readonly>
+                                </div>
+
+                                <div class="col-12">
+                                    <label for="parallelReservation" class="form-label fw-semibold">Parallel Reservation</label>
+                                    <input type="text" class="form-control" id="parallelReservation" readonly>
+                                </div>
+
+                                <div class="col-12 d-flex gap-2 mt-2">
+                                    <button type="button" class="btn btn-outline-light" id="resetBtn">
+                                        <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
+                                    </button>
+                                    <button type="submit" class="btn btn-success ms-auto" id="saveShotputBtn" disabled>
+                                        <i class="bi bi-check2-circle me-1"></i> Save Shotput
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Shotput Attempts -->
+                <div class="col-12 col-xl-5">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-secondary text-white d-flex align-items-center">
+                            <i class="bi bi-bullseye me-2"></i>
+                            <span class="fw-semibold">Shotput Attempts (Male – 7.260 Kg)</span>
+                        </div>
+                        <div class="card-body bg-dark-subtle">
+                            <div class="row g-3">
+                                <div class="col-12 col-md-6">
+                                    <label for="attempt1" class="form-label fw-semibold">Attempt 1 (meters)</label>
+                                    <input type="number" step="0.01" class="form-control" id="attempt1" placeholder="e.g. 7.35">
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <label for="marks1" class="form-label fw-semibold">Marks 1</label>
+                                    <input type="number" class="form-control" id="marks1" readonly>
+                                </div>
+
+                                <div class="col-12 col-md-6">
+                                    <label for="attempt2" class="form-label fw-semibold">Attempt 2 (meters)</label>
+                                    <input type="number" step="0.01" class="form-control" id="attempt2" placeholder="e.g. 8.10">
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <label for="marks2" class="form-label fw-semibold">Marks 2</label>
+                                    <input type="number" class="form-control" id="marks2" readonly>
+                                </div>
+
+                                <div class="col-12 col-md-6">
+                                    <label for="attempt3" class="form-label fw-semibold">Attempt 3 (meters)</label>
+                                    <input type="number" step="0.01" class="form-control" id="attempt3" placeholder="e.g. 8.65">
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <label for="marks3" class="form-label fw-semibold">Marks 3</label>
+                                    <input type="number" class="form-control" id="marks3" readonly>
+                                </div>
+
+                                <div class="col-12">
+                                    <hr class="border-secondary">
+                                </div>
+
+                                <div class="col-12 col-md-6">
+                                    <label for="highestDistance" class="form-label fw-semibold">Highest Distance (m)</label>
+                                    <input type="number" step="0.01" class="form-control" id="highestDistance" readonly>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <label for="highestMarks" class="form-label fw-semibold">Highest Marks</label>
+                                    <input type="number" class="form-control" id="highestMarks" readonly>
+                                </div>
+                            </div>
+
+                            <div class="mt-3 small text-secondary">
+                                Marks scale (Male – Shotput 7.260 Kg):
+                                <br/>8.50m+ = 15, 7.90–&lt;8.50 = 12, 7.30–&lt;7.90 = 10,
+                                6.70–&lt;7.30 = 8, 6.10–&lt;6.70 = 6,
+                                5.50–&lt;6.10 = 5, 4.90–&lt;5.50 = 4,
+                                4.30–&lt;4.90 = 3, 3.70–&lt;4.30 = 2,
+                                3.10–&lt;3.70 = 1, &lt;3.10 = 0.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div th:replace="fragments/footer :: footer"></div>
+<script th:src="@{/js/shotput.js}"></script>
+</body>
+</html>
+

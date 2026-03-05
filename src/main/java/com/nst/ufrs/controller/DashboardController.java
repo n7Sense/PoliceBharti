@@ -52,6 +52,11 @@ public class DashboardController {
         return "physical-test";
     }
 
+    @GetMapping("/shotput")
+    public String shotput(Model model) {
+        return "shotput";
+    }
+
     @GetMapping("/appeal-1")
     public String appeal1(Model model) {
         return "appeal-1";

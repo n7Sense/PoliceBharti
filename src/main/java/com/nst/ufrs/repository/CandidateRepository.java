@@ -58,4 +58,18 @@ public interface CandidateRepository extends JpaRepository<Candidate, Long> {
 
     @Query("SELECT c.tokenNo FROM Candidate c WHERE c.tokenNo IN :tokenNos")
     List<Long> findExistingTokenNos(@Param("tokenNos") Collection<Long> tokenNos);
+
+    @Query("""
+            SELECT c FROM Candidate c
+            WHERE c.batchMaster.id = :batchId
+              AND c.batchMaster.eventLocation.id = :eventLocationId
+            ORDER BY
+              CASE WHEN c.runningNumber IS NULL THEN 1 ELSE 0 END,
+              c.runningNumber ASC,
+              c.id ASC
+            """)
+    List<Candidate> findAllByBatchForEventLocation(
+            @Param("batchId") Long batchId,
+            @Param("eventLocationId") Long eventLocationId
+    );
 }

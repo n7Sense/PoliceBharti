@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString(exclude = {"id"})
+@ToString(exclude = {"id", "batchMaster"})
 public class Candidate {
 
     @Id
@@ -304,6 +304,16 @@ public class Candidate {
 
     @Column(name = "running_number")
     private Integer runningNumber;
+
+    /**
+     * Batch this candidate is assigned to (when running number is assigned).
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+            name = "batch_master_id",
+            foreignKey = @ForeignKey(name = "fk_candidate_batch_master")
+    )
+    private BatchMaster batchMaster;
 
 
     @PrePersist

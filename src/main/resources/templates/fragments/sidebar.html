@@ -76,6 +76,15 @@
         </li>
 
         <li class="nav-item mb-1">
+            <a th:href="@{/batch-master}"
+               class="nav-link d-flex align-items-center text-white"
+               th:classappend="${activePage} == 'batchMaster' ? ' active' : ''">
+                <i class="bi bi-collection-fill me-2"></i>
+                <span>Batch Master</span>
+            </a>
+        </li>
+
+        <li class="nav-item mb-1">
             <a th:href="@{/assign-running-number}"
                class="nav-link d-flex align-items-center text-white"
                th:classappend="${activePage} == 'assignRunningNumber' ? ' active' : ''">

@@ -212,6 +212,11 @@ public class AssignRunningNumberServiceImpl implements AssignRunningNumberServic
         if (c.getRunningNumber() != null) {
             return AssignRunningNumberResultDto.builder().success(false).message("Running number already assigned: " + c.getRunningNumber()).build();
         }
+        if (c.getBatchMaster() != null && c.getBatchMaster().getId() != null && !c.getBatchMaster().getId().equals(batch.getId())) {
+            return AssignRunningNumberResultDto.builder().success(false)
+                    .message("Candidate already assigned to another batch.")
+                    .build();
+        }
 
         GlobalRunningNumber grn = globalRepo.findByEventLocationIdForUpdate(eventLocationId)
                 .orElseThrow(() -> new IllegalStateException("Global running number not found for location"));
@@ -219,6 +224,7 @@ public class AssignRunningNumberServiceImpl implements AssignRunningNumberServic
         int assigned = (int) nextNumber;
 
         c.setRunningNumber(assigned);
+        c.setBatchMaster(batch);
         candidateRepo.save(c);
 
         grn.setGlobalRunningNumber(nextNumber + 1);

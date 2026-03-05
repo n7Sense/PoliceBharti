@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head :: head('Batch Master')"></head>
+<body class="bg-dark text-light">
+<div th:replace="fragments/header :: header"></div>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-3 col-lg-2 p-0">
+            <div th:replace="fragments/sidebar :: sidebar('batchMaster')"></div>
+        </div>
+
+        <div class="col-md-9 col-lg-10 p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h3 class="mb-0 fw-bold">Batch Master</h3>
+                    <p class="text-secondary mb-0 small">View all batches and candidates assigned to each batch.</p>
+                </div>
+            </div>
+
+            <div id="batchMasterAlertContainer"></div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-secondary text-white d-flex align-items-center">
+                    <i class="bi bi-collection-fill me-2"></i>
+                    <span class="fw-semibold me-auto">Batches</span>
+                    <span class="badge bg-dark ms-2" id="batchCountBadge">0 records</span>
+                </div>
+                <div class="card-body bg-dark-subtle">
+                    <div class="table-responsive">
+                        <table class="table table-dark table-striped table-hover align-middle mb-0" id="batchesTable">
+                            <thead class="table-secondary text-dark">
+                            <tr>
+                                <th>Batch Code</th>
+                                <th>Batch Name</th>
+                                <th class="text-center">Batch Size</th>
+                                <th class="text-center">Assigned</th>
+                                <th class="text-center">Locked</th>
+                                <th class="text-center">Status</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                            </thead>
+                            <tbody id="batchesTableBody">
+                            <tr>
+                                <td colspan="7" class="text-center text-secondary py-4">
+                                    Loading batches...
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Candidates Modal -->
+<div class="modal fade" id="batchCandidatesModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content bg-dark text-light border-secondary">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title fw-bold" id="batchCandidatesModalTitle">Batch Candidates</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
+                    <div class="small text-secondary" id="batchCandidatesSubtitle"></div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-light btn-sm" id="printBatchCandidatesBtn" type="button">
+                            <i class="bi bi-printer me-1"></i> Print (PDF)
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-dark table-striped table-hover align-middle mb-0" id="batchCandidatesTable">
+                        <thead class="table-secondary text-dark">
+                        <tr>
+                            <th class="text-center">Running No</th>
+                            <th>Application No</th>
+                            <th>Name</th>
+                            <th>Mobile</th>
+                            <th>Post</th>
+                            <th>Category</th>
+                        </tr>
+                        </thead>
+                        <tbody id="batchCandidatesTableBody">
+                        <tr>
+                            <td colspan="6" class="text-center text-secondary py-4">
+                                Select a batch to view candidates.
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="fragments/footer :: footer"></div>
+<script th:src="@{/js/batch-master.js}"></script>
+</body>
+</html>
+

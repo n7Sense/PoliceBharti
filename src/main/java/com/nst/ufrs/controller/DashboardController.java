@@ -68,6 +68,12 @@ public class DashboardController {
         return "assign-running-number";
     }
 
+    @GetMapping("/batch-master")
+    public String batchMaster(Model model) {
+        model.addAttribute("activePage", "batchMaster");
+        return "batch-master";
+    }
+
     @GetMapping("/assign-chest-number")
     public String assignChestNumber(Model model) {
         model.addAttribute("activePage", "assignChest");

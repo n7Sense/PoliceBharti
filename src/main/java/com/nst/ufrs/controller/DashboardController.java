@@ -16,16 +16,11 @@ public class DashboardController {
     @GetMapping("/dashboard")
     public String genericDashboard(Model model, HttpSession httpSession) {
 
-        Long userID = (Long) httpSession.getAttribute("userID");
-        String name = (String) httpSession.getAttribute("name");
-        String email = (String) httpSession.getAttribute("email");
-        Long eventLocationId = (Long) httpSession.getAttribute("eventLocationId");
-
         long totalUploaded = candidateRepository.count();
         long totalPresent = candidateRepository.findAllByAttendance(true).size();
-        long totalAbsent = candidateRepository.findAllByAttendance(false).size();
-        long totalApproved = candidateRepository.findAllByStatus(true).size();
-        long totalRejected = candidateRepository.findAllByStatus(false).size();
+        long totalAbsent = totalUploaded - totalPresent;
+        long totalApproved = candidateRepository.findAllByPhysicalTestStatus(true).size();
+        long totalRejected = candidateRepository.findAllByPhysicalTestStatus(false).size();
 
         model.addAttribute("activePage", "dashboard");
         model.addAttribute("totalUploaded", totalUploaded);
@@ -42,9 +37,20 @@ public class DashboardController {
         return "upload-candidate";
     }
 
+    @GetMapping("/upload-event")
+    public String uploadEvent(Model model) {
+        model.addAttribute("activePage", "uploadEvent");
+        return "upload-event";
+    }
+
     @GetMapping("/add-candidate")
     public String addCandidate(Model model) {
         return "add-candidate";
+    }
+
+    @GetMapping("/document-verification")
+    public String documentVerification(Model model) {
+        return "document-verification";
     }
 
     @GetMapping("/physical-test")

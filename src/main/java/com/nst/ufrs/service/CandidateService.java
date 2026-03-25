@@ -1,9 +1,11 @@
 package com.nst.ufrs.service;
 
-import com.nst.ufrs.dto.CandidateListItemDto;
 import com.nst.ufrs.dto.CandidateDetailsDto;
+import com.nst.ufrs.dto.CandidateDocumentVerificationDto;
 import com.nst.ufrs.dto.CandidateEnrollmentRequest;
+import com.nst.ufrs.dto.CandidateListItemDto;
 import com.nst.ufrs.dto.CandidateVerificationDataDto;
+import com.nst.ufrs.dto.DocumentVerificationDecisionRequest;
 import com.nst.ufrs.dto.ExcelUploadResponse;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -41,4 +43,8 @@ public interface CandidateService {
     CandidateVerificationDataDto getCandidateVerificationData(long applicationNo);
 
     void enrollCandidate(CandidateEnrollmentRequest request);
+
+    CandidateDocumentVerificationDto getCandidateDocumentVerificationData(long applicationNo);
+
+    void applyDocumentVerificationDecision(DocumentVerificationDecisionRequest request);
 }

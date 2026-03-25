@@ -90,23 +90,34 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         if (paginationContainer) {
+            const maxButtons = 5;
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = startPage + maxButtons - 1;
+            if (endPage > totalPages) {
+                endPage = totalPages;
+                startPage = Math.max(1, endPage - maxButtons + 1);
+            }
+
             let html = `
                 <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
                     <button class="page-link" data-page="${currentPage - 1}">Previous</button>
                 </li>
             `;
-            for (let p = 1; p <= totalPages; p++) {
+
+            for (let p = startPage; p <= endPage; p++) {
                 html += `
                     <li class="page-item ${p === currentPage ? 'active' : ''}">
                         <button class="page-link" data-page="${p}">${p}</button>
                     </li>
                 `;
             }
+
             html += `
                 <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
                     <button class="page-link" data-page="${currentPage + 1}">Next</button>
                 </li>
             `;
+
             paginationContainer.innerHTML = html;
 
             paginationContainer.querySelectorAll("button.page-link").forEach(btn => {

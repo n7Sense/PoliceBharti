@@ -39,6 +39,10 @@ public class RunningNumberServiceImpl {
 
         LocalDate today = LocalDate.now();
 
+        // Before init: delete old empty batches, then mark remaining old batches inactive and unlocked
+        batchRepo.deleteOldEmptyBatches(eventLocationId, today);
+        batchRepo.updateOldBatchesSetInactiveAndUnlocked(eventLocationId, today);
+
         // Latest batch for this location
         Optional<BatchMaster> latestBatch = batchRepo.findTopByEventLocation_IdOrderByIdDesc(eventLocationId);
 
@@ -66,8 +70,12 @@ public class RunningNumberServiceImpl {
             // Example: start=81, assigned=15 => next=96
             int batchSize = parseBatchSize(batch.getBatchSize());
             int assigned = batch.getAssignedCount() != null ? batch.getAssignedCount() : 0;
-            long next = (batch.getBatchId() != null ? batch.getBatchId().longValue() : 0L) + Math.min(assigned, batchSize);
-            grn.setGlobalRunningNumber(next);
+
+
+            //long next = (batch.getBatchId() != null ? batch.getBatchId().longValue() : 0L) + Math.min(assigned, batchSize);
+
+            long max = candidateRepository.findMaxRunningNumber().orElse(1);
+            grn.setGlobalRunningNumber(max);
             grn.setUpdatedDate(today);
 
             globalRepo.save(grn);

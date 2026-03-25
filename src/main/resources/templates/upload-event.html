@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head :: head('Upload Event')"></head>
+<body class="bg-dark text-light">
+<div th:replace="fragments/header :: header"></div>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-3 col-lg-2 p-0">
+            <div th:replace="fragments/sidebar :: sidebar('uploadEvent')"></div>
+        </div>
+        <div class="col-md-9 col-lg-10 p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h3 class="mb-0 fw-bold">Upload Event</h3>
+                    <p class="text-secondary mb-0 small">
+                        Upload Excel results for running events (100m, 200m, 600m, 800m, 5Km).
+                    </p>
+                </div>
+            </div>
+
+            <div id="eventUploadAlertContainer"></div>
+
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-primary text-white d-flex align-items-center">
+                    <i class="bi bi-cloud-upload-fill me-2"></i>
+                    <span class="fw-semibold">Upload Event Excel File</span>
+                </div>
+                <div class="card-body bg-dark-subtle">
+                    <form id="eventUploadForm" enctype="multipart/form-data" class="row gy-3 align-items-end">
+                        <div class="col-md-4">
+                            <label for="eventKey" class="form-label fw-semibold">
+                                Event
+                            </label>
+                            <select id="eventKey" name="eventKey" class="form-select" required>
+                                <option value="" disabled selected>Select Event</option>
+                                <option value="100m">100m</option>
+                                <option value="200m">200m</option>
+                                <option value="600m">600m</option>
+                                <option value="800m">800m</option>
+                                <option value="5Km">5Km</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="lap" class="form-label fw-semibold">
+                                Lap
+                            </label>
+                            <input type="number"
+                                   class="form-control"
+                                   id="lap"
+                                   name="lap"
+                                   value="0"
+                                   min="0"
+                                   step="1"
+                                   required>
+                            <div class="form-text text-light">
+                                Default 0 for non-lap events.
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="eventFile" class="form-label fw-semibold">
+                                Select Excel File (.xls / .xlsx)
+                            </label>
+                            <input type="file"
+                                   class="form-control"
+                                   id="eventFile"
+                                   name="file"
+                                   accept=".xls,.xlsx"
+                                   required>
+                            <div class="form-text text-light">
+                                Columns: Sr. No, RFID No, Chest No, Start Time, End Time, Time Difference, Mark, Sign.
+                            </div>
+                        </div>
+                        <div class="col-md-2 d-flex gap-2">
+                            <button type="submit" class="btn btn-primary flex-grow-1" id="eventUploadButton">
+                                <i class="bi bi-upload me-1"></i> Upload
+                            </button>
+                            <button type="reset" class="btn btn-outline-light">
+                                <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
+                            </button>
+                        </div>
+                    </form>
+                    <small class="text-secondary d-block mt-2">
+                        This form calls <code>/api/v1/events/upload</code> and expects an <code>ExcelUploadResponse</code> JSON.
+                        Columns <strong>Sr. No</strong> and <strong>Sign</strong> are ignored while saving.
+                    </small>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-secondary text-white d-flex flex-wrap align-items-center">
+                    <i class="bi bi-list-ul me-2"></i>
+                    <span class="fw-semibold me-auto">Uploaded Event Records</span>
+                    <span class="badge bg-dark ms-2" id="eventCountBadge">
+                        0 records
+                    </span>
+                </div>
+                <div class="card-body bg-dark-subtle">
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <label for="searchRunningNumber"
+                                   class="form-label small text-uppercase fw-semibold">
+                                Search by Chest Number
+                            </label>
+                            <input type="text"
+                                   id="searchRunningNumber"
+                                   class="form-control form-control-sm"
+                                   placeholder="Enter Chest / Running Number">
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-dark table-striped table-hover align-middle mb-0"
+                               id="eventsTable">
+                            <thead class="table-secondary text-dark">
+                            <tr>
+                                <th>RFID Number</th>
+                                <th>Running Number</th>
+                                <th>Start Time</th>
+                                <th>End Time</th>
+                                <th>Time Difference</th>
+                                <th>Marks</th>
+                                <th>Lap</th>
+                                <th>Event Name</th>
+                            </tr>
+                            </thead>
+                            <tbody id="eventsTableBody">
+                            <tr>
+                                <td colspan="8" class="text-center text-secondary py-4">
+                                    Upload an event Excel file to see records here.
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div class="small text-secondary" id="eventsPageInfo">
+                            Showing 0 of 0
+                        </div>
+                        <nav>
+                            <ul class="pagination pagination-sm mb-0" id="eventsPagination">
+                                <!-- Filled by upload-event.js -->
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div th:replace="fragments/footer :: footer"></div>
+<script th:src="@{/js/upload-event.js}"></script>
+</body>
+</html>
+

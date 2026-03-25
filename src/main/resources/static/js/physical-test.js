@@ -15,9 +15,13 @@ document.addEventListener("DOMContentLoaded", function () {
     const saveBtn = document.getElementById("saveBtn"); // legacy button in left form (kept)
 
     const applicationNoEl = document.getElementById("applicationNo");
+    const nameEl = document.getElementById("name");
     const postEl = document.getElementById("post");
     const genderEl = document.getElementById("gender");
     const dobEl = document.getElementById("dob");
+    const ageEl = document.getElementById("age");
+    const emailEl = document.getElementById("email");
+    const religionEl = document.getElementById("religion");
     const applicationCategoryEl = document.getElementById("applicationCategory");
     const parallelReservationEl = document.getElementById("parallelReservation");
     const mobileNoEl = document.getElementById("mobileNo");
@@ -71,9 +75,13 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function clearCandidateFields() {
+        if (nameEl) nameEl.value = "";
         postEl.value = "";
         genderEl.value = "";
         dobEl.value = "";
+        if (ageEl) ageEl.value = "";
+        if (emailEl) emailEl.value = "";
+        if (religionEl) religionEl.value = "";
         applicationCategoryEl.value = "";
         parallelReservationEl.value = "";
         mobileNoEl.value = "";
@@ -106,7 +114,7 @@ document.addEventListener("DOMContentLoaded", function () {
             photoPreviewEl.src = "";
         }
         if (photoPlaceholderEl) photoPlaceholderEl.style.display = "block";
-        if (savePhysicalTestBtn) savePhysicalTestBtn.disabled = true;
+        //if (savePhysicalTestBtn) savePhysicalTestBtn.disabled = true;
         if (downloadPdfBtn) downloadPdfBtn.disabled = true;
     }
 
@@ -178,9 +186,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const data = await res.json();
 
+            if (nameEl) nameEl.value = data.name ?? "";
             postEl.value = data.post ?? "";
             genderEl.value = data.gender ?? "";
             dobEl.value = formatDob(data.dob);
+            if (ageEl) ageEl.value = data.age != null ? String(data.age) : "";
+            if (emailEl) emailEl.value = data.email ?? "";
+            if (religionEl) religionEl.value = data.religion ?? "";
             applicationCategoryEl.value = data.applicationCategory ?? "";
             parallelReservationEl.value = data.parallelReservation ?? "";
             mobileNoEl.value = data.mobileNo ?? "";
@@ -436,21 +448,21 @@ document.addEventListener("DOMContentLoaded", function () {
                 verificationPassed = true;
                 if (verificationStatusEl) verificationStatusEl.textContent = `Verified (L:${left.score}, R:${right.score})`;
                 showAlert("success", "Candidate verified successfully. You can now save Physical Test.");
-                if (savePhysicalTestBtn) savePhysicalTestBtn.disabled = false;
+                //if (savePhysicalTestBtn) savePhysicalTestBtn.disabled = false;
             } else {
                 verificationPassed = false;
                 if (verificationStatusEl) verificationStatusEl.textContent = `Not verified (L:${left.score}, R:${right.score})`;
                 showAlert("danger", "Fingerprint mismatch. Candidate NOT verified.");
-                if (savePhysicalTestBtn) savePhysicalTestBtn.disabled = true;
+                //if (savePhysicalTestBtn) savePhysicalTestBtn.disabled = true;
             }
         } catch (e) {
             console.error(e);
             verificationPassed = false;
             if (verificationStatusEl) verificationStatusEl.textContent = "Verification failed";
             showAlert("danger", "Verification failed. Ensure Aratek Assistant is running and device is connected.");
-            if (savePhysicalTestBtn) savePhysicalTestBtn.disabled = true;
+            //if (savePhysicalTestBtn) savePhysicalTestBtn.disabled = true;
         } finally {
-            if (verifyCandidateBtn) verifyCandidateBtn.disabled = false;
+           // if (verifyCandidateBtn) verifyCandidateBtn.disabled = false;
         }
     }
 
@@ -467,10 +479,14 @@ document.addEventListener("DOMContentLoaded", function () {
             showAlert("warning", "Please fetch candidate details first (press Enter or Tab).");
             return;
         }
-        if (!verificationPassed) {
-            showAlert("danger", "Please verify candidate (photo + fingerprints) before saving physical test.");
+        if (!heightEl.value || !chestEl.value || !expandedChestEl.value) {
+            showAlert("danger", "Height, Chest and Expanded Chest are mandatory.");
             return;
         }
+        /*if (!verificationPassed) {
+            showAlert("danger", "Please verify candidate (photo + fingerprints) before saving physical test.");
+            return;
+        }*/
 
         const payload = {
             applicationNo: Number(appNoText),
@@ -482,7 +498,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         try {
             if (savePhysicalTestBtn) {
-                savePhysicalTestBtn.disabled = true;
+                //savePhysicalTestBtn.disabled = true;
                 savePhysicalTestBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>Saving...';
             }
 
@@ -505,7 +521,7 @@ document.addEventListener("DOMContentLoaded", function () {
             showAlert("danger", e.message || "Failed to save physical test.");
         } finally {
             if (savePhysicalTestBtn) {
-                savePhysicalTestBtn.disabled = false;
+                //savePhysicalTestBtn.disabled = false;
                 savePhysicalTestBtn.innerHTML = '<i class="bi bi-check2-circle me-1"></i> Save Physical Test';
             }
         }

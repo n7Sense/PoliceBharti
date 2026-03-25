@@ -89,11 +89,11 @@ public class Candidate {
     @Column(name = "parallel_reservation", length = 100)
     private String parallelReservation;
 
-    @Column(name = "non_cremelayer", length = 5)
-    private String nonCremelayer;
+    @Column(name = "non_cremelayer")
+    private Boolean nonCremelayer;
 
-    @Column(name = "maharashtra_domicile", length = 5)
-    private String maharashtraDomicile;
+    @Column(name = "maharashtra_domicile")
+    private Boolean maharashtraDomicile;
 
     @Column(name = "maharashtra_domicile_cert_no", length = 100)
     private String maharashtraDomicileCertNo;
@@ -101,8 +101,8 @@ public class Candidate {
     @Column(name = "maharashtra_domicile_date")
     private LocalDate maharashtraDomicileDate;
 
-    @Column(name = "karnataka_domicile", length = 5)
-    private String karnatakaDomicile;
+    @Column(name = "karnataka_domicile")
+    private Boolean karnatakaDomicile;
 
     @Column(name = "karnataka_domicile_cert_no", length = 100)
     private String karnatakaDomicileCertNo;
@@ -110,29 +110,29 @@ public class Candidate {
     @Column(name = "karnataka_domicile_date")
     private LocalDate karnatakaDomicileDate;
 
-    @Column(name = "ex_soldier", length = 5)
-    private String exSoldier;
+    @Column(name = "ex_soldier")
+    private Boolean exSoldier;
 
-    @Column(name = "home_guard", length = 5)
-    private String homeGuard;
+    @Column(name = "home_guard")
+    private Boolean homeGuard;
 
-    @Column(name = "prakalpgrast", length = 5)
-    private String prakalpgrast;
+    @Column(name = "prakalpgrast")
+    private Boolean prakalpgrast;
 
-    @Column(name = "bhukampgrast", length = 5)
-    private String bhukampgrast;
+    @Column(name = "bhukampgrast")
+    private Boolean bhukampgrast;
 
-    @Column(name = "sportsperson", length = 5)
-    private String sportsperson;
+    @Column(name = "sportsperson")
+    private Boolean sportsperson;
 
-    @Column(name = "parttime", length = 5)
-    private String parttime;
+    @Column(name = "parttime")
+    private Boolean parttime;
 
-    @Column(name = "female_reservation", length = 5)
-    private String femaleReservation;
+    @Column(name = "female_reservation")
+    private Boolean femaleReservation;
 
-    @Column(name = "parent_in_police", length = 5)
-    private String parentInPolice;
+    @Column(name = "parent_in_police")
+    private Boolean parentInPolice;
 
     @Column(name = "police_rank", length = 100)
     private String policeRank;
@@ -143,8 +143,8 @@ public class Candidate {
     @Column(name = "police_details", length = 255)
     private String policeDetails;
 
-    @Column(name = "anath", length = 5)
-    private String anath;
+    @Column(name = "anath")
+    private Boolean anath;
 
     @Column(name = "anath_date")
     private LocalDate anathDate;
@@ -152,11 +152,11 @@ public class Candidate {
     @Column(name = "anath_certificate_type", length = 100)
     private String anathCertificateType;
 
-    @Column(name = "ex_service_dependent", length = 5)
-    private String exServiceDependent;
+    @Column(name = "ex_service_dependent")
+    private Boolean exServiceDependent;
 
-    @Column(name = "is_ncc", length = 5)
-    private String isNcc;
+    @Column(name = "is_ncc")
+    private Boolean isNcc;
 
     @Column(name = "ncc_certificate_no", length = 100)
     private String nccCertificateNo;
@@ -164,11 +164,11 @@ public class Candidate {
     @Column(name = "ncc_date")
     private LocalDate nccDate;
 
-    @Column(name = "naxalite_area", length = 5)
-    private String naxaliteArea;
+    @Column(name = "naxalite_area")
+    private Boolean naxaliteArea;
 
-    @Column(name = "small_vehicle", length = 5)
-    private String smallVehicle;
+    @Column(name = "small_vehicle")
+    private Boolean smallVehicle;
 
     @Column(name = "ex_service_joining_date")
     private LocalDate exServiceJoiningDate;
@@ -179,8 +179,8 @@ public class Candidate {
     @Column(name = "caste_certificate_date")
     private LocalDate casteCertificateDate;
 
-    @Column(name = "work_on_contract", length = 5)
-    private String workOnContract;
+    @Column(name = "work_on_contract")
+    private Boolean workOnContract;
 
     @Column(name = "application_date")
     private LocalDate applicationDate;
@@ -240,8 +240,8 @@ public class Candidate {
     @Column(name = "diploma_total_marks")
     private Integer diplomaTotalMarks;
 
-    @Column(name = "mscit", length = 5)
-    private String mscit;
+    @Column(name = "mscit")
+    private Boolean mscit;
 
     @Column(name = "graduation_degree", length = 100)
     private String graduationDegree;
@@ -255,8 +255,8 @@ public class Candidate {
     @Column(name = "other_post_graduation_degree", length = 100)
     private String otherPostGraduationDegree;
 
-    @Column(name = "is_farmer_suicide", length = 5)
-    private String isFarmerSuicide;
+    @Column(name = "is_farmer_suicide")
+    private Boolean isFarmerSuicide;
 
     @Column(name = "farmer_suicide_report_no", length = 100)
     private String farmerSuicideReportNo;
@@ -302,7 +302,19 @@ public class Candidate {
     @Column(name = "status")
     private Boolean status = false;
 
-    @Column(name = "running_number")
+    @Column(name = "document_status")
+    private Boolean documentStatus = false;
+
+    @Column(name = "physical_test_status")
+    private Boolean physicalTestStatus = false;
+
+    @Column(name = "result_status")
+    private Boolean resultStatus;
+
+    @Column(name = "assign_running_number_status")
+    private Boolean assignRunningNumberStatus = false;
+
+    @Column(name = "running_number", unique = true)
     private Integer runningNumber;
 
     /**

@@ -19,6 +19,9 @@ public class BatchMaster {
     @Column(name = "batch_id")
     private Integer batchId;
 
+    @Column(name = "today_batch_id")
+    private Integer todayBatchId;
+
     @Column(name = "batch_name")
     private String batchName;
 
@@ -94,4 +97,11 @@ public class BatchMaster {
      */
     @Column(name = "last_used_date")
     private LocalDate lastUsedDate;
+
+    /**
+     * Last date when this batch was used for assignment
+     * Helps track batch activity and daily completion
+     */
+    @Column(name = "crn")
+    private Long currentRunningNumber;
 }

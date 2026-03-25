@@ -50,7 +50,6 @@ public class SecurityConfig {
                         .requestMatchers("/event-incharge/**").hasRole("EVENT_INCHARGE")
                         .requestMatchers("/data-entry/**").hasRole("DATA_ENTRY")
                         .requestMatchers("/vahak/**").hasRole("VAHAK")
-                        .requestMatchers("/document-verification/**").hasRole("DOCUMENT_VERIFICATION")
                         .anyRequest().authenticated()
                 )
                 .userDetailsService(customUserDetailsService)

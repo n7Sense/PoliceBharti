@@ -22,5 +22,7 @@ public interface ShotputRepository extends JpaRepository<Shotput, Long> {
             ORDER BY s.id DESC
             """)
     List<Shotput> findAllByApplicationNoOrderByIdDesc(@Param("applicationNo") Long applicationNo);
+
+    List<Shotput> findAllByCandidateIdIn(java.util.Collection<Long> candidateIds);
 }
 

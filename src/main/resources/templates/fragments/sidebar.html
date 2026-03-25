@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+
 <body th:fragment="sidebar(activePage)">
 <div id="sidebar"
      class="d-flex flex-column flex-shrink-0 p-3 bg-dark text-white"
@@ -31,11 +33,29 @@
         </li>
 
         <li class="nav-item mb-1">
+            <a th:href="@{/upload-event}"
+               class="nav-link d-flex align-items-center text-white"
+               th:classappend="${activePage} == 'uploadEvent' ? ' active' : ''">
+                <i class="bi bi-stopwatch-fill me-2"></i>
+                <span>Upload Event</span>
+            </a>
+        </li>
+
+        <li class="nav-item mb-1">
             <a th:href="@{/add-candidate}"
                class="nav-link d-flex align-items-center text-white"
                th:classappend="${activePage} == 'addCandidate' ? ' active' : ''">
                 <i class="bi bi-person-plus-fill me-2"></i>
                 <span>Add Candidate</span>
+            </a>
+        </li>
+
+        <li class="nav-item mb-1">
+            <a th:href="@{/document-verification}"
+               class="nav-link d-flex align-items-center text-white"
+               th:classappend="${activePage} == 'documentVerification' ? ' active' : ''">
+                <i class="bi bi-file-earmark-check-fill me-2"></i>
+                <span>Document Verification</span>
             </a>
         </li>
 
@@ -48,16 +68,7 @@
             </a>
         </li>
 
-        <li class="nav-item mb-1">
-            <a th:href="@{/shotput}"
-               class="nav-link d-flex align-items-center text-white"
-               th:classappend="${activePage} == 'shotput' ? ' active' : ''">
-                <i class="bi bi-bullseye me-2"></i>
-                <span>Shotput</span>
-            </a>
-        </li>
-
-        <li class="nav-item mb-1">
+        <li class="nav-item mb-1" sec:authorize="hasAnyRole('ROLE_ACP', 'ROLE_DCP')">
             <a th:href="@{/appeal-1}"
                class="nav-link d-flex align-items-center text-white"
                th:classappend="${activePage} == 'appeal1' ? ' active' : ''">
@@ -66,7 +77,7 @@
             </a>
         </li>
 
-        <li class="nav-item">
+        <li class="nav-item" sec:authorize="hasAnyRole('ROLE_ACP', 'ROLE_DCP')">
             <a th:href="@{/appeal-2}"
                class="nav-link d-flex align-items-center text-white"
                th:classappend="${activePage} == 'appeal2' ? ' active' : ''">
@@ -76,13 +87,31 @@
         </li>
 
         <li class="nav-item mb-1">
+            <a th:href="@{/assign-running-number}"
+               class="nav-link d-flex align-items-center text-white"
+               th:classappend="${activePage} == 'assignRunningNumber' ? ' active' : ''">
+                <i class="bi bi-person-badge-fill me-2"></i>
+                <span>Assign Running Number</span>
+            </a>
+        </li>
+
+        <li class="nav-item mb-1">
+            <a th:href="@{/shotput}"
+               class="nav-link d-flex align-items-center text-white"
+               th:classappend="${activePage} == 'shotput' ? ' active' : ''">
+                <i class="bi bi-bullseye me-2"></i>
+                <span>Shotput</span>
+            </a>
+        </li>
+
+        <!--<li class="nav-item mb-1">
             <a th:href="@{/assign-chest-number}"
                class="nav-link d-flex align-items-center text-white"
                th:classappend="${activePage} == 'assignChest' ? ' active' : ''">
                 <i class="bi bi-person-badge-fill me-2"></i>
                 <span>Assign Chest Number</span>
             </a>
-        </li>
+        </li>-->
 
         <li class="nav-item mb-1">
             <a th:href="@{/batch-master}"
@@ -94,13 +123,14 @@
         </li>
 
         <li class="nav-item mb-1">
-            <a th:href="@{/assign-running-number}"
+            <a th:href="@{/candidate-master}"
                class="nav-link d-flex align-items-center text-white"
-               th:classappend="${activePage} == 'assignRunningNumber' ? ' active' : ''">
-                <i class="bi bi-hash me-2"></i>
-                <span>Assign Running Number</span>
+               th:classappend="${activePage} == 'candidateMaster' ? ' active' : ''">
+                <i class="bi bi-people-fill me-2"></i>
+                <span>Candidate Master</span>
             </a>
         </li>
+
     </ul>
 
     <hr class="border-secondary mt-auto" />

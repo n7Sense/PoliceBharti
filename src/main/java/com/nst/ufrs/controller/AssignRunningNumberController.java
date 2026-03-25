@@ -1,16 +1,21 @@
 package com.nst.ufrs.controller;
 
+import com.nst.ufrs.domain.BatchMaster;
 import com.nst.ufrs.dto.AssignBatchDto;
 import com.nst.ufrs.dto.AssignPageDataDto;
 import com.nst.ufrs.dto.AssignRunningNumberResultDto;
 import com.nst.ufrs.dto.LockBatchResultDto;
+import com.nst.ufrs.repository.BatchMasterRepository;
 import com.nst.ufrs.service.AssignRunningNumberService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpSession;
+
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -19,7 +24,8 @@ import java.util.Map;
 public class AssignRunningNumberController {
 
     private final AssignRunningNumberService assignRunningNumberService;
-
+    @Autowired
+    BatchMasterRepository batchRepo;
     private Long getEventLocationId(HttpSession session) {
         Long id = (Long) session.getAttribute("eventLocationId");
         if (id == null) throw new IllegalStateException("Event location not set. Please log in again.");
@@ -50,7 +56,10 @@ public class AssignRunningNumberController {
     @GetMapping(value = "/current-number", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, Long>> getCurrentNumber(HttpSession session) {
         Long eventLocationId = getEventLocationId(session);
-        long current = assignRunningNumberService.getCurrentRunningNumber(eventLocationId);
+        Long userId = getUserId(session);
+        List<BatchMaster> lockedByUser = batchRepo.findByEventLocation_IdAndLockedByUserIdAndBatchStatus(eventLocationId, userId, true);
+        BatchMaster batch = lockedByUser.get(0);
+        long current = assignRunningNumberService.getCurrentRunningNumber(eventLocationId, batch.getBatchId(), batch.getAssignedCount());
         return ResponseEntity.ok(Map.of("currentRunningNumber", current));
     }
 

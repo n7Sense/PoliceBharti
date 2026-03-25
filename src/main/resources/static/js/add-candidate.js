@@ -15,12 +15,16 @@ document.addEventListener("DOMContentLoaded", function () {
     const saveBtn = document.getElementById("saveBtn");
 
     const applicationNoEl = document.getElementById("applicationNo");
+    const nameEl = document.getElementById("name");
     const postEl = document.getElementById("post");
     const genderEl = document.getElementById("gender");
     const dobEl = document.getElementById("dob");
+    const ageEl = document.getElementById("age");
+    const emailEl = document.getElementById("email");
     const applicationCategoryEl = document.getElementById("applicationCategory");
     const parallelReservationEl = document.getElementById("parallelReservation");
     const mobileNoEl = document.getElementById("mobileNo");
+    const religionEl = document.getElementById("religion");
 
     const photoBase64El = document.getElementById("photoBase64");
     const photoPreviewEl = document.getElementById("photoPreview");
@@ -37,8 +41,10 @@ document.addEventListener("DOMContentLoaded", function () {
     const captureLeftThumbBtn = document.getElementById("captureLeftThumbBtn");
     const captureRightThumbBtn = document.getElementById("captureRightThumbBtn");
     const openAssistantLink = document.getElementById("openAssistantLink");
+    const printIdCardBtn = document.getElementById("printIdCardBtn");
 
     let candidateLoaded = false;
+    let lastSavedApplicationNo = null;
     let webcamStream = null;
 
     function showAlert(type, message) {
@@ -52,12 +58,16 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function clearCandidateFields() {
+        if (nameEl) nameEl.value = "";
         postEl.value = "";
         genderEl.value = "";
         dobEl.value = "";
+        if (ageEl) ageEl.value = "";
+        if (emailEl) emailEl.value = "";
         applicationCategoryEl.value = "";
         parallelReservationEl.value = "";
         mobileNoEl.value = "";
+        if (religionEl) religionEl.value = "";
         candidateLoaded = false;
     }
 
@@ -118,15 +128,23 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const data = await res.json();
 
+            if (nameEl) nameEl.value = data.name ?? "";
             postEl.value = data.post ?? "";
             genderEl.value = data.gender ?? "";
             dobEl.value = formatDob(data.dob);
+            if (ageEl) ageEl.value = data.age != null ? String(data.age) : "";
+            if (emailEl) emailEl.value = data.email ?? "";
             applicationCategoryEl.value = data.applicationCategory ?? "";
             parallelReservationEl.value = data.parallelReservation ?? "";
             mobileNoEl.value = data.mobileNo ?? "";
+            if (religionEl) religionEl.value = data.religion ?? "";
 
             candidateLoaded = true;
-            showAlert("success", "Candidate details loaded. Now capture photo and thumbs.");
+            lastSavedApplicationNo = data.applicationNo ?? null;
+            if (printIdCardBtn) {
+                printIdCardBtn.disabled = !data.attendance;
+            }
+            showAlert("success", "Candidate details loaded.");
         } catch (e) {
             console.error(e);
             showAlert("danger", "Unable to fetch candidate details. Please try again.");
@@ -386,6 +404,10 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             showAlert("success", (data && data.message) ? data.message : "Candidate Added Successfully");
+            lastSavedApplicationNo = Number(appNoText);
+            if (printIdCardBtn) {
+                printIdCardBtn.disabled = false;
+            }
         } catch (e) {
             console.error(e);
             showAlert("danger", e.message || "Failed to save candidate.");
@@ -408,7 +430,24 @@ document.addEventListener("DOMContentLoaded", function () {
             clearCandidateFields();
             clearCapturedData();
             closeWebcam();
+            lastSavedApplicationNo = null;
+            if (printIdCardBtn) {
+                printIdCardBtn.disabled = true;
+            }
             showAlert("info", "Form reset.");
+        });
+    }
+
+    if (printIdCardBtn) {
+        printIdCardBtn.addEventListener("click", () => {
+            const appNoText = applicationNoEl.value.trim();
+            const effectiveAppNo = lastSavedApplicationNo ?? (appNoText ? Number(appNoText) : null);
+            if (!effectiveAppNo) {
+                showAlert("warning", "Please save candidate before printing ID card.");
+                return;
+            }
+            const url = `/api/v1/candidates/id-card?applicationNo=${encodeURIComponent(effectiveAppNo)}`;
+            window.open(url, "_blank", "noopener,noreferrer");
         });
     }
 });

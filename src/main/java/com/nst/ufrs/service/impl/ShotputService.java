@@ -138,7 +138,7 @@ public class ShotputService {
             details.setWidthPercentage(100);
 
             addRow(details, "Application No", String.valueOf(candidate.getApplicationNo()), label, value);
-            addRow(details, "Name", (safe(candidate.getFirstName()) + " " + safe(candidate.getSurname())).trim(), label, value);
+            addRow(details, "Name", buildFullName(candidate.getFirstName(), candidate.getFatherName(), candidate.getSurname()), label, value);
             addRow(details, "Post", safe(candidate.getPost()), label, value);
             addRow(details, "Gender", safe(candidate.getGender()), label, value);
             addRow(details, "DOB", candidate.getDob() != null ? candidate.getDob().toString() : "", label, value);
@@ -275,6 +275,20 @@ public class ShotputService {
 
     private static String safe(String s) {
         return s == null ? "" : s;
+    }
+
+    private static String buildFullName(String firstName, String fatherName, String surname) {
+        StringBuilder sb = new StringBuilder();
+        if (firstName != null && !firstName.isBlank()) sb.append(firstName.trim());
+        if (fatherName != null && !fatherName.isBlank()) {
+            if (sb.length() > 0) sb.append(" ");
+            sb.append(fatherName.trim());
+        }
+        if (surname != null && !surname.isBlank()) {
+            if (sb.length() > 0) sb.append(" ");
+            sb.append(surname.trim());
+        }
+        return sb.toString();
     }
 }
 

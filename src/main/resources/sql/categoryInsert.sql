@@ -1,0 +1,10 @@
+INSERT INTO ufrs.category (category) VALUES ('Open');
+INSERT INTO ufrs.category (category) VALUES ('OBC');
+INSERT INTO ufrs.category (category) VALUES ('SC');
+INSERT INTO ufrs.category (category) VALUES ('NT(D)');
+INSERT INTO ufrs.category (category) VALUES ('ST');
+INSERT INTO ufrs.category (category) VALUES ('VJ(A)/DT(A)');
+INSERT INTO ufrs.category (category) VALUES ('SEBC');
+INSERT INTO ufrs.category (category) VALUES ('SBC');
+INSERT INTO ufrs.category (category) VALUES ('NT(C)');
+INSERT INTO ufrs.category (category) VALUES ('NT(B)');

@@ -7,6 +7,7 @@ import com.nst.ufrs.dto.BatchListItemDto;
 import com.nst.ufrs.repository.BatchMasterRepository;
 import com.nst.ufrs.repository.CandidateRepository;
 import com.nst.ufrs.service.impl.BatchRecruitmentPdfService;
+import com.nst.ufrs.service.impl.BatchShotputSheetPdfService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ContentDisposition;
@@ -27,6 +28,7 @@ public class BatchMasterController {
     private final BatchMasterRepository batchRepo;
     private final CandidateRepository candidateRepo;
     private final BatchRecruitmentPdfService pdfService;
+    private final BatchShotputSheetPdfService shotputSheetPdfService;
 
     private Long getEventLocationId(HttpSession session) {
         Long id = (Long) session.getAttribute("eventLocationId");
@@ -79,6 +81,32 @@ public class BatchMasterController {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
         headers.setContentDisposition(ContentDisposition.inline().filename("recruitment-" + code + ".pdf").build());
+        return ResponseEntity.ok().headers(headers).body(pdf);
+    }
+
+    @GetMapping(value = "/{batchId}/shotput-sheet", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> printShotputSheetPdf(
+            @PathVariable("batchId") Long batchId,
+            HttpSession session
+    ) {
+        Long eventLocationId = getEventLocationId(session);
+
+        BatchMaster batch = batchRepo.findByIdAndEventLocationId(batchId, eventLocationId).orElse(null);
+        if (batch == null) {
+            return ResponseEntity.status(404)
+                    .contentType(MediaType.TEXT_PLAIN)
+                    .body("Batch not found".getBytes(StandardCharsets.UTF_8));
+        }
+
+        List<Candidate> candidates = candidateRepo.findAllByBatchForEventLocation(batchId, eventLocationId);
+        List<BatchCandidateRowDto> rows = candidates.stream().map(this::toCandidateDto).toList();
+
+        byte[] pdf = shotputSheetPdfService.generateShotputSheet(batch.getBatchCode(), LocalDate.now(), rows);
+
+        String code = (batch.getBatchCode() == null || batch.getBatchCode().isBlank()) ? "batch" : batch.getBatchCode().trim();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDisposition(ContentDisposition.inline().filename("shotput-sheet-" + code + ".pdf").build());
         return ResponseEntity.ok().headers(headers).body(pdf);
     }
 

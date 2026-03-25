@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head :: head('Document Verification')"></head>
+<body class="bg-dark text-light">
+<div th:replace="fragments/header :: header"></div>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-3 col-lg-2 p-0">
+            <div th:replace="fragments/sidebar :: sidebar('documentVerification')"></div>
+        </div>
+
+        <div class="col-md-9 col-lg-10 p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h3 class="mb-0 fw-bold">Document Verification</h3>
+                    <p class="text-secondary mb-0 small">
+                        Fetch candidate by Application No and verify all required certificates.
+                    </p>
+                </div>
+            </div>
+
+            <div id="documentVerificationAlertContainer"></div>
+
+            <div class="row g-4">
+                <!-- Candidate Details -->
+                <div class="col-12 col-xl-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-primary text-white d-flex align-items-center">
+                            <i class="bi bi-person-vcard-fill me-2"></i>
+                            <span class="fw-semibold">Candidate Details</span>
+                        </div>
+                        <div class="card-body bg-dark-subtle">
+                            <form id="documentVerificationForm" class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="applicationNo" class="form-label fw-semibold">
+                                        Application No <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" id="applicationNo" placeholder="Enter Application No">
+                                    <div class="form-text">Press Enter or Tab to fetch candidate.</div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="name" class="form-label fw-semibold">Name</label>
+                                    <input type="text" class="form-control" id="name" readonly>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="gender" class="form-label fw-semibold">Gender</label>
+                                    <input type="text" class="form-control" id="gender" readonly>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="mobileNo" class="form-label fw-semibold">Mobile No</label>
+                                    <input type="text" class="form-control" id="mobileNo" readonly>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="dob" class="form-label fw-semibold">DOB</label>
+                                    <input type="text" class="form-control" id="dob" readonly>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="age" class="form-label fw-semibold">Age</label>
+                                    <input type="text" class="form-control" id="age" readonly>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="email" class="form-label fw-semibold">Email</label>
+                                    <input type="text" class="form-control" id="email" readonly>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="post" class="form-label fw-semibold">Post</label>
+                                    <input type="text" class="form-control" id="post" readonly>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="religion" class="form-label fw-semibold">Religion</label>
+                                    <input type="text" class="form-control" id="religion" readonly>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="applicationCategory" class="form-label fw-semibold">Application Category</label>
+                                    <input type="text" class="form-control" id="applicationCategory" readonly>
+                                </div>
+
+                                <div class="col-12">
+                                    <label for="parallelReservation" class="form-label fw-semibold">Parallel Reservation</label>
+                                    <input type="text" class="form-control" id="parallelReservation" readonly>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="naxaliteArea" class="form-label fw-semibold">Naxalite Area</label>
+                                    <input type="text" class="form-control" id="naxaliteArea" readonly>
+                                    <div class="form-text small">
+                                        If Yes, SSC/HSC not required and Seventh Result Marksheet becomes mandatory.
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="documentStatus" class="form-label fw-semibold">Document Status</label>
+                                    <input type="text" class="form-control" id="documentStatus" readonly>
+                                </div>
+
+                                <div class="col-12 d-flex gap-2 mt-2">
+                                    <button type="button" class="btn btn-outline-light" id="resetBtn">
+                                        <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
+                                    </button>
+                                    <button type="button" class="btn btn-success ms-auto" id="submitVerificationBtn">
+                                        <i class="bi bi-check2-circle me-1"></i> Submit Verification
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Certificates List -->
+                <div class="col-12 col-xl-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-secondary text-white d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-file-earmark-check-fill me-2"></i>
+                                <span class="fw-semibold">Certificates to Verify</span>
+                            </div>
+                        </div>
+                        <div class="card-body bg-dark-subtle">
+
+                            <style>
+                                .certificate-check {
+                                    border-radius: 0.75rem;
+                                    border: 1px solid #343a40;
+                                    padding: 0.6rem 0.9rem;
+                                    margin-bottom: 0.5rem;
+                                    background: #141824;
+                                    transition: all 0.15s ease-in-out;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: space-between;
+                                }
+
+                                .certificate-check:hover {
+                                    border-color: #0d6efd;
+                                    box-shadow: 0 0 0 1px rgba(13,110,253,0.4);
+                                }
+
+                                .certificate-check input[type="checkbox"] {
+                                    display: none;
+                                }
+
+                                .certificate-pill {
+                                    display: inline-flex;
+                                    align-items: center;
+                                    gap: 0.4rem;
+                                    padding: 0.25rem 0.7rem;
+                                    border-radius: 999px;
+                                    border: 1px solid #495057;
+                                    background: #1e2230;
+                                    color: #e9ecef;
+                                    font-size: 0.8rem;
+                                }
+
+                                .certificate-check-label {
+                                    margin: 0;
+                                    cursor: pointer;
+                                    flex: 1;
+                                    color: #f8f9fa;
+                                }
+
+                                .certificate-check-visual {
+                                    width: 1.6rem;
+                                    height: 1.6rem;
+                                    border-radius: 999px;
+                                    border: 2px solid #6c757d;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    color: transparent;
+                                    transition: all 0.15s ease-in-out;
+                                    background: #141824;
+                                }
+
+                                .certificate-check input[type="checkbox"]:checked + .certificate-check-visual {
+                                    background: #198754;
+                                    border-color: #198754;
+                                    color: #fff;
+                                    box-shadow: 0 0 0 2px rgba(25,135,84,0.5);
+                                }
+
+                                .certificate-check input[type="checkbox"]:checked ~ .certificate-check-label {
+                                    color: #d1e7dd;
+                                }
+                            </style>
+
+                            <div class="d-flex flex-wrap align-items-start gap-3 mb-3">
+                                <div class="photo-preview border border-secondary rounded bg-dark d-flex align-items-center justify-content-center"
+                                     style="width: 140px; height: 180px;">
+                                    <img id="candidatePhoto" alt="Candidate Photo"
+                                         class="img-fluid"
+                                         style="display:none; width:130px; height:170px; object-fit:cover; border-radius:0.5rem;">
+                                    <div id="candidatePhotoPlaceholder" class="text-secondary small px-2 text-center">
+                                        No photo available
+                                    </div>
+                                </div>
+                                <div class="small text-secondary flex-grow-1">
+                                    Passport-size photo of the candidate appears here once details are fetched.
+                                </div>
+                            </div>
+
+                            <div class="mb-2 small text-secondary">
+                                Mandatory certificates appear on top. Additional certificates are shown only when candidate
+                                has claimed the corresponding reservation.
+                            </div>
+
+                            <h6 class="text-uppercase text-secondary fw-semibold small mb-2">
+                                Mandatory Certificates
+                            </h6>
+                            <div id="mandatoryCertificatesContainer" class="mb-3"></div>
+
+                            <h6 class="text-uppercase text-secondary fw-semibold small mb-2">
+                                Reservation / Other Certificates
+                            </h6>
+                            <div id="dynamicCertificatesContainer"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="fragments/footer :: footer"></div>
+<script th:src="@{/js/document-verification.js}"></script>
+</body>
+</html>
+

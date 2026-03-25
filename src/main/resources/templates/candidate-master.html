@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head :: head('Candidate Master')">
+    <style>
+        /* Candidate Master table responsiveness */
+        #candidateMasterTable {
+            width: 100%;
+            table-layout: auto;
+            font-size: 0.78rem;
+        }
+
+        #candidateMasterTable th,
+        #candidateMasterTable td {
+            white-space: nowrap;
+            padding-top: 0.25rem;
+            padding-bottom: 0.25rem;
+            padding-left: 0.4rem;
+            padding-right: 0.4rem;
+        }
+
+        @media (min-width: 1400px) {
+            #candidateMasterTable {
+                font-size: 0.82rem;
+            }
+        }
+
+        @media (max-width: 991.98px) {
+            #candidateMasterTable {
+                font-size: 0.72rem;
+            }
+            #candidateMasterTable th,
+            #candidateMasterTable td {
+                padding-left: 0.3rem;
+                padding-right: 0.3rem;
+            }
+        }
+
+        /* Enhance hover visibility on dark background */
+        #candidateMasterTable tbody tr:hover {
+            background-color: rgba(255, 255, 255, 0.08) !important;
+        }
+    </style>
+</head>
+<body class="bg-dark text-light">
+<div th:replace="fragments/header :: header"></div>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-3 col-lg-2 p-0">
+            <div th:replace="fragments/sidebar :: sidebar('candidateMaster')"></div>
+        </div>
+        <div class="col-md-9 col-lg-10 p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h3 class="mb-0 fw-bold">Candidate Master</h3>
+                    <p class="text-secondary mb-0 small">
+                        View candidate details with event results, filter by status, and download Excel.
+                    </p>
+                </div>
+            </div>
+
+            <div id="candidateMasterAlertContainer"></div>
+
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-body bg-dark-subtle">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-3">
+                            <label for="fromDate" class="form-label small fw-semibold text-uppercase">From Date</label>
+                            <input type="date" id="fromDate" class="form-control form-control-sm">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="toDate" class="form-label small fw-semibold text-uppercase">To Date</label>
+                            <input type="date" id="toDate" class="form-control form-control-sm">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold text-uppercase">Status Filters</label>
+                            <div class="dropdown">
+                                <button class="btn btn-outline-light btn-sm dropdown-toggle w-100 text-start"
+                                        type="button" id="statusFilterDropdown" data-bs-toggle="dropdown"
+                                        aria-expanded="false">
+                                    <i class="bi bi-funnel me-1"></i> Select Process Status
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-end p-3 bg-dark text-light shadow-lg"
+                                     style="min-width: 360px;">
+                                    <div class="small text-primary fw-semibold mb-2">Filter Approved/Rejected</div>
+                                    <div class="d-flex mb-1 small fw-semibold">
+                                        <div class="flex-grow-1">Process</div>
+                                        <div class="text-center" style="width:70px;">Appr.</div>
+                                        <div class="text-center" style="width:70px;">Rej.</div>
+                                    </div>
+                                    <hr class="border-secondary my-1">
+                                    <div class="small">
+                                        <div class="d-flex align-items-center mb-1">
+                                            <div class="flex-grow-1">Attendance</div>
+                                            <div class="text-center" style="width:70px;">
+                                                <input type="checkbox" class="form-check-input status-flag"
+                                                       data-status="ATTENDANCE" data-value="true">
+                                            </div>
+                                            <div class="text-center" style="width:70px;">
+                                                <input type="checkbox" class="form-check-input status-flag"
+                                                       data-status="ATTENDANCE" data-value="false">
+                                            </div>
+                                        </div>
+                                        <div class="d-flex align-items-center mb-1">
+                                            <div class="flex-grow-1">Documents</div>
+                                            <div class="text-center" style="width:70px;">
+                                                <input type="checkbox" class="form-check-input status-flag"
+                                                       data-status="DOCUMENTS" data-value="true">
+                                            </div>
+                                            <div class="text-center" style="width:70px;">
+                                                <input type="checkbox" class="form-check-input status-flag"
+                                                       data-status="DOCUMENTS" data-value="false">
+                                            </div>
+                                        </div>
+                                        <div class="d-flex align-items-center mb-1">
+                                            <div class="flex-grow-1">Physical Test</div>
+                                            <div class="text-center" style="width:70px;">
+                                                <input type="checkbox" class="form-check-input status-flag"
+                                                       data-status="PHYSICAL_TEST" data-value="true">
+                                            </div>
+                                            <div class="text-center" style="width:70px;">
+                                                <input type="checkbox" class="form-check-input status-flag"
+                                                       data-status="PHYSICAL_TEST" data-value="false">
+                                            </div>
+                                        </div>
+                                        <div class="d-flex align-items-center mb-1">
+                                            <div class="flex-grow-1">Running No.</div>
+                                            <div class="text-center" style="width:70px;">
+                                                <input type="checkbox" class="form-check-input status-flag"
+                                                       data-status="RUNNING_NO" data-value="true">
+                                            </div>
+                                            <div class="text-center" style="width:70px;">
+                                                <input type="checkbox" class="form-check-input status-flag"
+                                                       data-status="RUNNING_NO" data-value="false">
+                                            </div>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <div class="flex-grow-1">Result Status</div>
+                                            <div class="text-center" style="width:70px;">
+                                                <input type="checkbox" class="form-check-input status-flag"
+                                                       data-status="RESULT_STATUS" data-value="true">
+                                            </div>
+                                            <div class="text-center" style="width:70px;">
+                                                <input type="checkbox" class="form-check-input status-flag"
+                                                       data-status="RESULT_STATUS" data-value="false">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-2 d-flex gap-2 justify-content-end">
+                            <button type="button" class="btn btn-outline-light btn-sm" id="applyFiltersBtn">
+                                Apply Filters
+                            </button>
+                            <button type="button" class="btn btn-success btn-sm" id="downloadExcelBtn">
+                                <i class="bi bi-file-earmark-excel me-1"></i>Download Excel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-secondary text-white d-flex align-items-center">
+                    <i class="bi bi-people-fill me-2"></i>
+                    <span class="fw-semibold me-auto">Candidates</span>
+                    <span class="badge bg-dark ms-2" id="candidateMasterCountBadge">0 records</span>
+                </div>
+                <div class="card-body bg-dark-subtle">
+                    <div class="table-responsive">
+                        <table class="table table-dark table-striped table-hover table-sm align-middle mb-0"
+                               id="candidateMasterTable" style="width:210%">
+                            <thead class="table-secondary text-dark">
+                            <tr>
+                                <th rowspan="2">Sr No</th>
+                                <th rowspan="2">Application No</th>
+                                <th rowspan="2">Post</th>
+                                <th rowspan="2">First Name</th>
+                                <th rowspan="2">Father Name</th>
+                                <th rowspan="2">Surname</th>
+                                <th rowspan="2">Mother Name</th>
+                                <th rowspan="2">DOB</th>
+                                <th rowspan="2">Age</th>
+                                <th rowspan="2">Gender</th>
+                                <th rowspan="2">Category</th>
+                                <th rowspan="2">Reservation Type</th>
+                                <th rowspan="2">Mobile No</th>
+                                <th rowspan="2">Result</th>
+                                <th colspan="4" class="text-center">100m Running</th>
+                                <th colspan="4" class="text-center">5km Running</th>
+                                <th colspan="5" class="text-center">Shotput</th>
+                                <th rowspan="2">Total</th>
+                                <th class="result-status-col d-none" rowspan="2">Result (Pass/Fail)</th>
+                            </tr>
+                            <tr>
+                                <th>Start Time</th>
+                                <th>End Time</th>
+                                <th>Time Diff</th>
+                                <th>Marks</th>
+                                <th>Start Time</th>
+                                <th>End Time</th>
+                                <th>Time Diff</th>
+                                <th>Marks</th>
+                                <th>Attempt1</th>
+                                <th>Attempt2</th>
+                                <th>Attempt3</th>
+                                <th>Highest Distance</th>
+                                <th>Marks</th>
+                            </tr>
+                            </thead>
+                            <tbody id="candidateMasterTableBody">
+                            <tr>
+                                <td colspan="30" class="text-center text-secondary py-4">
+                                    Loading candidates...
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div class="small text-secondary" id="candidateMasterPageInfo">Showing 0 of 0</div>
+                        <nav>
+                            <ul class="pagination pagination-sm mb-0" id="candidateMasterPagination"></ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="fragments/footer :: footer"></div>
+<script th:src="@{/js/candidate-master.js}"></script>
+</body>
+</html>
+

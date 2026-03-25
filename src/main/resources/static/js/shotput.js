@@ -10,9 +10,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const printBtn = document.getElementById("printShotputBtn");
 
     const applicationNoEl = document.getElementById("applicationNo");
+    const nameEl = document.getElementById("name");
     const postEl = document.getElementById("post");
     const genderEl = document.getElementById("gender");
     const dobEl = document.getElementById("dob");
+    const ageEl = document.getElementById("age");
+    const emailEl = document.getElementById("email");
+    const religionEl = document.getElementById("religion");
     const applicationCategoryEl = document.getElementById("applicationCategory");
     const parallelReservationEl = document.getElementById("parallelReservation");
     const mobileNoEl = document.getElementById("mobileNo");
@@ -45,9 +49,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function clearCandidateFields() {
+        if (nameEl) nameEl.value = "";
         postEl.value = "";
         genderEl.value = "";
         dobEl.value = "";
+        if (ageEl) ageEl.value = "";
+        if (emailEl) emailEl.value = "";
+        if (religionEl) religionEl.value = "";
         applicationCategoryEl.value = "";
         parallelReservationEl.value = "";
         mobileNoEl.value = "";
@@ -189,9 +197,13 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!res.ok) throw new Error("Failed to fetch candidate details.");
 
             const data = await res.json();
+            if (nameEl) nameEl.value = data.name ?? "";
             postEl.value = data.post ?? "";
             genderEl.value = data.gender ?? "";
             dobEl.value = formatDob(data.dob);
+            if (ageEl) ageEl.value = data.age != null ? String(data.age) : "";
+            if (emailEl) emailEl.value = data.email ?? "";
+            if (religionEl) religionEl.value = data.religion ?? "";
             applicationCategoryEl.value = data.applicationCategory ?? "";
             parallelReservationEl.value = data.parallelReservation ?? "";
             mobileNoEl.value = data.mobileNo ?? "";

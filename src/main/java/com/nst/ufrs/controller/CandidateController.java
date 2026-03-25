@@ -1,7 +1,9 @@
 package com.nst.ufrs.controller;
 
 import com.nst.ufrs.dto.*;
+import com.nst.ufrs.dto.DocumentVerificationDecisionRequest;
 import com.nst.ufrs.service.CandidateService;
+import com.nst.ufrs.service.impl.CandidateIdCardPdfService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -12,6 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -30,6 +34,7 @@ import java.util.NoSuchElementException;
 public class CandidateController {
 
     private final CandidateService candidateService;
+    private final CandidateIdCardPdfService candidateIdCardPdfService;
 
     /**
      * Upload an Excel (.xlsx) file containing candidate records.
@@ -122,12 +127,64 @@ public class CandidateController {
         }
     }
 
+    @GetMapping(value = "/id-card", produces = MediaType.APPLICATION_PDF_VALUE)
+    @Operation(summary = "Download candidate ID card PDF")
+    public ResponseEntity<?> downloadIdCard(@RequestParam("applicationNo") long applicationNo) {
+        try {
+            byte[] pdf = candidateIdCardPdfService.generateIdCard(applicationNo);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            headers.setContentDisposition(ContentDisposition.inline()
+                    .filename("id-card-" + applicationNo + ".pdf")
+                    .build());
+            return ResponseEntity.ok().headers(headers).body(pdf);
+        } catch (NoSuchElementException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(java.util.Map.of("message", "Invalid Application Number. Candidate not found."));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(java.util.Map.of("message", "Failed to generate ID card PDF"));
+        }
+    }
+
     @PostMapping(value = "/enroll", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Save candidate photo and biometrics")
     public ResponseEntity<?> enrollCandidate(@RequestBody CandidateEnrollmentRequest request) {
         try {
             candidateService.enrollCandidate(request);
             return ResponseEntity.ok(java.util.Map.of("message", "Candidate Added Successfully"));
+        } catch (NoSuchElementException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(java.util.Map.of("message", "Invalid Application Number. Candidate not found."));
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("message", ex.getMessage()));
+        }
+    }
+
+    @GetMapping(value = "/document-verification", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Fetch candidate document verification flags by application number")
+    public ResponseEntity<?> getDocumentVerificationData(@RequestParam("applicationNo") long applicationNo) {
+        try {
+            var dto = candidateService.getCandidateDocumentVerificationData(applicationNo);
+            return ResponseEntity.ok(dto);
+        } catch (NoSuchElementException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(java.util.Map.of("message", "Invalid Application Number. Candidate not found."));
+        } catch (IllegalStateException ex) {
+            return ResponseEntity.badRequest()
+                    .body(java.util.Map.of("message", ex.getMessage()));
+        }
+    }
+
+    @PostMapping(value = "/document-verification", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Apply document verification decision for candidate")
+    public ResponseEntity<?> applyDocumentVerification(@RequestBody DocumentVerificationDecisionRequest request) {
+        try {
+            candidateService.applyDocumentVerificationDecision(request);
+            String message = request.isAllRequiredVerified()
+                    ? "Candidate documents verified successfully."
+                    : "Candidate rejected due to missing documents.";
+            return ResponseEntity.ok(java.util.Map.of("message", message));
         } catch (NoSuchElementException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(java.util.Map.of("message", "Invalid Application Number. Candidate not found."));

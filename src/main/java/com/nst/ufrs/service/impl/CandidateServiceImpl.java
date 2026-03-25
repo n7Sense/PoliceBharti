@@ -2,9 +2,11 @@ package com.nst.ufrs.service.impl;
 
 import com.nst.ufrs.domain.Candidate;
 import com.nst.ufrs.dto.CandidateDetailsDto;
+import com.nst.ufrs.dto.CandidateDocumentVerificationDto;
 import com.nst.ufrs.dto.CandidateEnrollmentRequest;
 import com.nst.ufrs.dto.CandidateListItemDto;
 import com.nst.ufrs.dto.CandidateVerificationDataDto;
+import com.nst.ufrs.dto.DocumentVerificationDecisionRequest;
 import com.nst.ufrs.dto.ExcelUploadResponse;
 import com.nst.ufrs.dto.ExcelUploadResponse.RowError;
 import com.nst.ufrs.exception.ExcelParseException;
@@ -303,37 +305,37 @@ public class CandidateServiceImpl implements CandidateService {
                 .subCaste(                  col[17])
                 .applicationCategory(       col[18])
                 .parallelReservation(       col[19])
-                .nonCremelayer(             col[20])
-                .maharashtraDomicile(       col[21])
+                .nonCremelayer(             parseYesNo(col[20]))
+                .maharashtraDomicile(       parseYesNo(col[21]))
                 .maharashtraDomicileCertNo( col[22])
                 .maharashtraDomicileDate(   parseDate(col[23]))
-                .karnatakaDomicile(         col[24])
+                .karnatakaDomicile(         parseYesNo(col[24]))
                 .karnatakaDomicileCertNo(   col[25])
                 .karnatakaDomicileDate(     parseDate(col[26]))
-                .exSoldier(                 col[27])
-                .homeGuard(                 col[28])
-                .prakalpgrast(              col[29])
-                .bhukampgrast(              col[30])
-                .sportsperson(              col[31])
-                .parttime(                  col[32])
-                .femaleReservation(         col[33])
-                .parentInPolice(            col[34])
+                .exSoldier(                 parseYesNo(col[27]))
+                .homeGuard(                 parseYesNo(col[28]))
+                .prakalpgrast(              parseYesNo(col[29]))
+                .bhukampgrast(              parseYesNo(col[30]))
+                .sportsperson(              parseYesNo(col[31]))
+                .parttime(                  parseYesNo(col[32]))
+                .femaleReservation(         parseYesNo(col[33]))
+                .parentInPolice(            parseYesNo(col[34]))
                 .policeRank(                col[35])
                 .policeNatureOfEmployment(  col[36])
                 .policeDetails(             col[37])
-                .anath(                     col[38])
+                .anath(                     parseYesNo(col[38]))
                 .anathDate(        parseDate(col[39]))
                 .anathCertificateType(      col[40])
-                .exServiceDependent(        col[41])
-                .isNcc(                     col[42])
+                .exServiceDependent(        parseYesNo(col[41]))
+                .isNcc(                     parseYesNo(col[42]))
                 .nccCertificateNo(          col[43])
                 .nccDate(          parseDate(col[44]))
-                .naxaliteArea(              col[45])
-                .smallVehicle(              col[46])
+                .naxaliteArea(              parseYesNo(col[45]))
+                .smallVehicle(              parseYesNo(col[46]))
                 .exServiceJoiningDate(parseDate(col[47]))
                 .casteCertificateNo(        col[48])
                 .casteCertificateDate(parseDate(col[49]))
-                .workOnContract(            col[50])
+                .workOnContract(            parseYesNo(col[50]))
                 .applicationDate(  parseDate(col[51]))
                 .place(                     col[52])
                 .sscBoardName(              col[53])
@@ -352,14 +354,15 @@ public class CandidateServiceImpl implements CandidateService {
                 .diplomaResult(             col[66])
                 .diplomaMarksObtained(parseInt(col[67]))
                 .diplomaTotalMarks( parseInt(col[68]))
-                .mscit(                     col[69])
+                .mscit(                     parseYesNo(col[69]))
                 .graduationDegree(          col[70])
                 .postGraduationDegree(      col[71])
                 .otherGraduationDegree(     col[72])
                 .otherPostGraduationDegree( col[73])
-                .isFarmerSuicide(           col[74])
+                .isFarmerSuicide(           parseYesNo(col[74]))
                 .farmerSuicideReportNo(     col[75])
                 .farmerSuicideReportDate(parseDate(col[76]))
+                .documentStatus(false)
                 .build();
     }
 
@@ -386,6 +389,18 @@ public class CandidateServiceImpl implements CandidateService {
         if (val == null || val.isBlank()) return null;
         try { return Integer.parseInt(val.trim().replaceAll("\\.0*$", "")); }
         catch (NumberFormatException e) { return null; }
+    }
+
+    /**
+     * Converts Excel "yes"/"no" (case-insensitive) to Boolean true/false.
+     * Blank or other values return null.
+     */
+    private static Boolean parseYesNo(String val) {
+        if (val == null || val.isBlank()) return null;
+        String v = val.trim().toLowerCase();
+        if ("yes".equals(v) || "y".equals(v) || "1".equals(v)) return true;
+        if ("no".equals(v) || "n".equals(v) || "0".equals(v)) return false;
+        return null;
     }
 
     private Double parseDouble(String val) {
@@ -467,10 +482,15 @@ public class CandidateServiceImpl implements CandidateService {
         return mapToListItems(candidates);
     }
 
+    List<Candidate> all = null;
     @Override
     @Transactional(readOnly = true)
-    public List<CandidateListItemDto> searchCandidates(String applicationNoText, Long mobileNo, String name, int limit) {
-        List<Candidate> all = candidateRepository.findAll();
+    public List<CandidateListItemDto>   searchCandidates(String applicationNoText, Long mobileNo, String name, int limit) {
+
+        if(all==null || all.isEmpty()){
+            all = candidateRepository.findAll();
+        }
+        //List<Candidate> all = candidateRepository.findAll();
         String appPrefix = applicationNoText != null ? applicationNoText.trim() : "";
         boolean hasAppNo = !appPrefix.isEmpty();
         boolean hasMobile = mobileNo != null;
@@ -514,8 +534,15 @@ public class CandidateServiceImpl implements CandidateService {
         }
         Candidate c = matches.get(0);
 
+        String name = buildFullName(c.getFirstName(), c.getFatherName(), c.getSurname());
+        Integer age = c.getDob() != null ? Period.between(c.getDob(), LocalDate.now()).getYears() : null;
+
         return CandidateDetailsDto.builder()
                 .applicationNo(c.getApplicationNo())
+                .name(name)
+                .age(age)
+                .email(c.getEmailId())
+                .religion(c.getReligion())
                 .post(c.getPost())
                 .gender(c.getGender())
                 .dob(c.getDob())
@@ -525,7 +552,25 @@ public class CandidateServiceImpl implements CandidateService {
                 .hasPhoto(c.getPhoto() != null && !c.getPhoto().isBlank())
                 .hasBiometric1(c.getBiometric1() != null && !c.getBiometric1().isBlank())
                 .hasBiometric2(c.getBiometric2() != null && !c.getBiometric2().isBlank())
+                .assignRunningNumberStatus(c.getAssignRunningNumberStatus())
+                .runningNumber(c.getRunningNumber())
+                .physicalTestStatus(c.getPhysicalTestStatus())
+                .attendance(c.getAttendance())
                 .build();
+    }
+
+    private static String buildFullName(String firstName, String fatherName, String surname) {
+        StringBuilder sb = new StringBuilder();
+        if (firstName != null && !firstName.isBlank()) sb.append(firstName.trim());
+        if (fatherName != null && !fatherName.isBlank()) {
+            if (sb.length() > 0) sb.append(" ");
+            sb.append(fatherName.trim());
+        }
+        if (surname != null && !surname.isBlank()) {
+            if (sb.length() > 0) sb.append(" ");
+            sb.append(surname.trim());
+        }
+        return sb.toString();
     }
 
     @Override
@@ -578,6 +623,84 @@ public class CandidateServiceImpl implements CandidateService {
         c.setBiometric1(request.getBiometric1());
         c.setBiometric2(request.getBiometric2());
         c.setAttendance(true);
+
+        candidateRepository.save(c);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public CandidateDocumentVerificationDto getCandidateDocumentVerificationData(long applicationNo) {
+        List<Candidate> matches = candidateRepository.findAllByApplicationNoOrderByIdDesc(applicationNo);
+        if (matches.isEmpty()) {
+            throw new NoSuchElementException("Candidate not found");
+        }
+        if (matches.size() > 1) {
+            log.warn("Duplicate candidates found for applicationNo={}. Using most recent by id for document verification data.", applicationNo);
+        }
+        Candidate c = matches.get(0);
+
+        // Ensure candidate has completed enrollment (photo + biometrics captured)
+        if (c.getAttendance() == null || !c.getAttendance()) {
+            throw new IllegalStateException("Candidate has not completed photo and biometric enrollment. Please complete Add Candidate first.");
+        }
+
+        String name = buildFullName(c.getFirstName(), c.getFatherName(), c.getSurname());
+        Integer age = c.getDob() != null ? Period.between(c.getDob(), LocalDate.now()).getYears() : null;
+
+        return CandidateDocumentVerificationDto.builder()
+                .applicationNo(c.getApplicationNo())
+                .name(name)
+                .gender(c.getGender())
+                .mobileNo(c.getMobileNo())
+                .dob(c.getDob())
+                .age(age)
+                .email(c.getEmailId())
+                .post(c.getPost())
+                .religion(c.getReligion())
+                .applicationCategory(c.getApplicationCategory())
+                .parallelReservation(c.getParallelReservation())
+                .photo(c.getPhoto())
+                .naxaliteArea(c.getNaxaliteArea())
+                .documentStatus(c.getDocumentStatus())
+                .nonCremelayer(c.getNonCremelayer())
+                .maharashtraDomicile(c.getMaharashtraDomicile())
+                .karnatakaDomicile(c.getKarnatakaDomicile())
+                .exSoldier(c.getExSoldier())
+                .homeGuard(c.getHomeGuard())
+                .prakalpgrast(c.getPrakalpgrast())
+                .bhukampgrast(c.getBhukampgrast())
+                .sportsperson(c.getSportsperson())
+                .femaleReservation(c.getFemaleReservation())
+                .parentInPolice(c.getParentInPolice())
+                .anath(c.getAnath())
+                .exServiceDependent(c.getExServiceDependent())
+                .isNcc(c.getIsNcc())
+                .smallVehicle(c.getSmallVehicle())
+                .workOnContract(c.getWorkOnContract())
+                .mscit(c.getMscit())
+                .isFarmerSuicide(c.getIsFarmerSuicide())
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public void applyDocumentVerificationDecision(DocumentVerificationDecisionRequest request) {
+        if (request == null || request.getApplicationNo() == null) {
+            throw new IllegalArgumentException("applicationNo is required");
+        }
+
+        List<Candidate> matches = candidateRepository.findAllByApplicationNoOrderByIdDesc(request.getApplicationNo());
+        if (matches.isEmpty()) {
+            throw new NoSuchElementException("Candidate not found");
+        }
+        if (matches.size() > 1) {
+            log.warn("Duplicate candidates found for applicationNo={}. Using most recent by id for document verification decision.",
+                    request.getApplicationNo());
+        }
+        Candidate c = matches.get(0);
+
+        c.setDocumentStatus(request.isAllRequiredVerified());
+        // When documents are missing, we keep overall status=false (rejected) which is already default/null in many flows
 
         candidateRepository.save(c);
     }

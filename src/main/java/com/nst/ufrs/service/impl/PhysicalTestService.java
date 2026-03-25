@@ -256,7 +256,7 @@ public class PhysicalTestService {
         Boolean derived = deriveFinalAttemptStatus(pt);
         if (derived == null) return;
 
-        candidate.setStatus(derived);
+        candidate.setPhysicalTestStatus(derived);
         candidateRepository.save(candidate);
     }
 

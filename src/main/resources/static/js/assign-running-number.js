@@ -14,10 +14,14 @@ document.addEventListener("DOMContentLoaded", function () {
     const currentRunningNumberDisplay = document.getElementById("currentRunningNumberDisplay");
     const form = document.getElementById("assignRunningNumberForm");
     const applicationNoEl = document.getElementById("applicationNo");
+    const nameEl = document.getElementById("name");
     const mobileNoEl = document.getElementById("mobileNo");
     const postEl = document.getElementById("post");
     const genderEl = document.getElementById("gender");
     const dobEl = document.getElementById("dob");
+    const ageEl = document.getElementById("age");
+    const emailEl = document.getElementById("email");
+    const religionEl = document.getElementById("religion");
     const applicationCategoryEl = document.getElementById("applicationCategory");
     const parallelReservationEl = document.getElementById("parallelReservation");
     const resetBtn = document.getElementById("resetBtn");
@@ -64,10 +68,14 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function clearCandidateFields() {
+        if (nameEl) nameEl.value = "";
         if (mobileNoEl) mobileNoEl.value = "";
         if (postEl) postEl.value = "";
         if (genderEl) genderEl.value = "";
         if (dobEl) dobEl.value = "";
+        if (ageEl) ageEl.value = "";
+        if (emailEl) emailEl.value = "";
+        if (religionEl) religionEl.value = "";
         if (applicationCategoryEl) applicationCategoryEl.value = "";
         if (parallelReservationEl) parallelReservationEl.value = "";
         candidateLoaded = false;
@@ -142,6 +150,38 @@ document.addEventListener("DOMContentLoaded", function () {
             if (pageData.batches.length === 1) batchSelect.value = pageData.batches[0].id;
             currentRunningNumberDisplay.textContent = pageData.currentRunningNumber;
             updateLockUnlockVisibility();
+
+            if (pageData.batches.length === 0) {
+                const modalEl = document.getElementById("noBatchesModal");
+                if (modalEl) {
+                    const modal = new bootstrap.Modal(modalEl);
+                    modal.show();
+                    const createBtn = document.getElementById("noBatchesCreateBtn");
+                    if (createBtn) {
+                        createBtn.onclick = async () => {
+                            modal.hide();
+                            createBtn.onclick = null;
+                            try {
+                                const createRes = await fetch("/api/v1/assign-running-number/create-batch", {
+                                    method: "POST",
+                                    headers: buildCsrfHeaders(),
+                                    credentials: "same-origin"
+                                });
+                                if (createRes.ok) {
+                                    const newBatch = await createRes.json();
+                                    showAlert("success", "First batch " + (newBatch.batchCode || "B1") + " created. You can lock it and start assigning.");
+                                    await loadPageData();
+                                } else {
+                                    showAlert("danger", "Failed to create batch.");
+                                }
+                            } catch (e) {
+                                console.error(e);
+                                showAlert("danger", "Failed to create batch.");
+                            }
+                        };
+                    }
+                }
+            }
         } catch (e) {
             console.error(e);
             showAlert("danger", "Failed to load batches. Please refresh the page.");
@@ -267,12 +307,23 @@ document.addEventListener("DOMContentLoaded", function () {
             }
             if (!res.ok) throw new Error("Failed to fetch candidate");
             const data = await res.json();
+            if (data.assignRunningNumberStatus === true) {
+                showAlert("warning", "This candidate has already been assigned a running number" + (data.runningNumber != null ? " (Running No: " + data.runningNumber + ")." : "."));
+                clearCandidateFields();
+                clearVerification();
+                applicationNoEl.value = "";
+                return;
+            }
             postEl.value = data.post ?? "";
             genderEl.value = data.gender ?? "";
             dobEl.value = formatDob(data.dob);
             applicationCategoryEl.value = data.applicationCategory ?? "";
             parallelReservationEl.value = data.parallelReservation ?? "";
             mobileNoEl.value = data.mobileNo ?? "";
+            if (nameEl) nameEl.value = data.name ?? "";
+            if (ageEl) ageEl.value = data.age != null ? String(data.age) : "";
+            if (emailEl) emailEl.value = data.email ?? "";
+            if (religionEl) religionEl.value = data.religion ?? "";
             candidateLoaded = true;
             showAlert("success", "Candidate loaded. Verify photo and biometrics, then click Assign Running Number.");
             const verRes = await fetch("/api/v1/candidates/verification-data?applicationNo=" + encodeURIComponent(appNo), { method: "GET", credentials: "same-origin" });
@@ -444,6 +495,55 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (b) {
                     b.assignedCount = (b.assignedCount || 0) + 1;
                     batchSelect.querySelector("option:checked").textContent = b.batchCode + " (" + b.assignedCount + "/" + (b.batchSize || 20) + ")";
+                }
+                if (data.batchFull === true && data.fullBatchCode && data.nextBatchCode) {
+                    const modalEl = document.getElementById("batchFullModal");
+                    const fullCodeEl = document.getElementById("batchFullFullBatchCode");
+                    const nextCodeEl = document.getElementById("batchFullNextBatchCode");
+                    if (modalEl && fullCodeEl && nextCodeEl) {
+                        fullCodeEl.textContent = data.fullBatchCode;
+                        nextCodeEl.textContent = data.nextBatchCode;
+                        const modal = new bootstrap.Modal(modalEl);
+                        modal.show();
+                        const createBtn = document.getElementById("batchFullCreateBtn");
+                        if (createBtn) {
+                            createBtn.onclick = async () => {
+                                modal.hide();
+                                createBtn.onclick = null;
+                                try {
+                                    const createRes = await fetch("/api/v1/assign-running-number/create-batch", {
+                                        method: "POST",
+                                        headers: buildCsrfHeaders(),
+                                        credentials: "same-origin"
+                                    });
+                                    if (createRes.ok) {
+                                        const newBatch = await createRes.json();
+                                        const lockRes = await fetch("/api/v1/assign-running-number/lock", {
+                                            method: "POST",
+                                            headers: buildCsrfHeaders(),
+                                            credentials: "same-origin",
+                                            body: JSON.stringify({ batchId: newBatch.id })
+                                        });
+                                        const lockData = await lockRes.json().catch(() => ({}));
+                                        await loadPageData();
+                                        if (lockData.success) {
+                                            showAlert("success", "Next batch " + (newBatch.batchCode || "") + " created and locked. You can continue assigning.");
+                                            batchSelect.value = newBatch.id;
+                                            updateLockUnlockVisibility();
+                                            await refreshCurrentNumber();
+                                        } else {
+                                            showAlert("info", "Batch " + (newBatch.batchCode || "") + " created. Please lock it to continue.");
+                                        }
+                                    } else {
+                                        showAlert("danger", "Failed to create next batch.");
+                                    }
+                                } catch (e) {
+                                    console.error(e);
+                                    showAlert("danger", "Failed to create next batch.");
+                                }
+                            };
+                        }
+                    }
                 }
             } else {
                 const msg = data.message || "Assign failed.";

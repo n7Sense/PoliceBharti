@@ -11,17 +11,30 @@ document.addEventListener("DOMContentLoaded", function () {
     const downloadPdfBtn = document.getElementById("downloadPdfBtn");
 
     const applicationNoEl = document.getElementById("applicationNo");
+    const nameEl = document.getElementById("name");
     const postEl = document.getElementById("post");
     const genderEl = document.getElementById("gender");
     const dobEl = document.getElementById("dob");
+    const ageEl = document.getElementById("age");
+    const emailEl = document.getElementById("email");
+    const religionEl = document.getElementById("religion");
     const applicationCategoryEl = document.getElementById("applicationCategory");
     const parallelReservationEl = document.getElementById("parallelReservation");
     const mobileNoEl = document.getElementById("mobileNo");
 
     const mainResultTextEl = document.getElementById("mainResultText");
     const mainReasonTextEl = document.getElementById("mainReasonText");
+    const mainHeightEl = document.getElementById("mainHeight");
+    const mainChestEl = document.getElementById("mainChest");
+    const mainExpandedChestEl = document.getElementById("mainExpandedChest");
+    const mainReasonEl = document.getElementById("mainReason");
+
     const appeal1ResultTextEl = document.getElementById("appeal1ResultText");
     const appeal1ReasonTextEl = document.getElementById("appeal1ReasonText");
+    const appeal1HeightEl = document.getElementById("appeal1Height");
+    const appeal1ChestEl = document.getElementById("appeal1Chest");
+    const appeal1ExpandedChestEl = document.getElementById("appeal1ExpandedChest");
+    const appeal1ReasonEl = document.getElementById("appeal1Reason");
 
     const height2El = document.getElementById("height2");
     const chest2El = document.getElementById("chest2");
@@ -41,9 +54,13 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function clearCandidateFields() {
+        if (nameEl) nameEl.value = "";
         postEl.value = "";
         genderEl.value = "";
         dobEl.value = "";
+        if (ageEl) ageEl.value = "";
+        if (emailEl) emailEl.value = "";
+        if (religionEl) religionEl.value = "";
         applicationCategoryEl.value = "";
         parallelReservationEl.value = "";
         mobileNoEl.value = "";
@@ -57,8 +74,16 @@ document.addEventListener("DOMContentLoaded", function () {
         rejectReason2El.value = "";
         if (mainResultTextEl) mainResultTextEl.textContent = "N/A";
         if (mainReasonTextEl) mainReasonTextEl.textContent = "N/A";
+        if (mainHeightEl) mainHeightEl.value = "";
+        if (mainChestEl) mainChestEl.value = "";
+        if (mainExpandedChestEl) mainExpandedChestEl.value = "";
+        if (mainReasonEl) mainReasonEl.value = "";
         if (appeal1ResultTextEl) appeal1ResultTextEl.textContent = "N/A";
         if (appeal1ReasonTextEl) appeal1ReasonTextEl.textContent = "N/A";
+        if (appeal1HeightEl) appeal1HeightEl.value = "";
+        if (appeal1ChestEl) appeal1ChestEl.value = "";
+        if (appeal1ExpandedChestEl) appeal1ExpandedChestEl.value = "";
+        if (appeal1ReasonEl) appeal1ReasonEl.value = "";
         if (downloadPdfBtn) downloadPdfBtn.disabled = true;
     }
 
@@ -96,9 +121,19 @@ document.addEventListener("DOMContentLoaded", function () {
             if (mainResultTextEl) mainResultTextEl.textContent = mainPass ? "PASS" : "REJECT";
             if (mainReasonTextEl) mainReasonTextEl.textContent = data.rejectReason || (mainPass ? "PASS" : "Failed limits");
 
+            if (mainHeightEl) mainHeightEl.value = data.height != null ? String(data.height) : "";
+            if (mainChestEl) mainChestEl.value = data.chest != null ? String(data.chest) : "";
+            if (mainExpandedChestEl) mainExpandedChestEl.value = data.expandedChest != null ? String(data.expandedChest) : "";
+            if (mainReasonEl) mainReasonEl.value = data.rejectReason ?? "";
+
             const a1Pass = data.status1 === true;
             if (appeal1ResultTextEl) appeal1ResultTextEl.textContent = data.status1 == null ? "N/A" : (a1Pass ? "PASS" : "REJECT");
             if (appeal1ReasonTextEl) appeal1ReasonTextEl.textContent = data.rejectReason1 || (data.status1 == null ? "N/A" : (a1Pass ? "PASS" : "Failed limits"));
+
+            if (appeal1HeightEl) appeal1HeightEl.value = data.height1 != null ? String(data.height1) : "";
+            if (appeal1ChestEl) appeal1ChestEl.value = data.chest1 != null ? String(data.chest1) : "";
+            if (appeal1ExpandedChestEl) appeal1ExpandedChestEl.value = data.expandedChest1 != null ? String(data.expandedChest1) : "";
+            if (appeal1ReasonEl) appeal1ReasonEl.value = data.rejectReason1 ?? "";
 
             height2El.value = data.height2 ?? "";
             chest2El.value = data.chest2 ?? "";
@@ -137,9 +172,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const data = await res.json();
 
+            if (data.physicalTestStatus === true) {
+                showAlert("warning", "Candidate passed the test. Appeal is not allowed.");
+                return;
+            }
+
+            if (nameEl) nameEl.value = data.name ?? "";
             postEl.value = data.post ?? "";
             genderEl.value = data.gender ?? "";
             dobEl.value = formatDob(data.dob);
+            if (ageEl) ageEl.value = data.age != null ? String(data.age) : "";
+            if (emailEl) emailEl.value = data.email ?? "";
+            if (religionEl) religionEl.value = data.religion ?? "";
             applicationCategoryEl.value = data.applicationCategory ?? "";
             parallelReservationEl.value = data.parallelReservation ?? "";
             mobileNoEl.value = data.mobileNo ?? "";

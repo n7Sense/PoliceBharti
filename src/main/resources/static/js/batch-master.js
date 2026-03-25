@@ -61,7 +61,8 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         tbody.innerHTML = "";
         for (const b of batches) {
-            const locked = b.isLocked === true ? "Yes" : "No";
+           // const locked = b.isLocked === true ? "Yes" : "No";
+            //<td class="text-center">${locked}</td>
             const status = b.batchStatus === false ? "Full" : "Active";
             const tr = document.createElement("tr");
             tr.innerHTML = `
@@ -69,14 +70,21 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td>${safe(b.batchName)}</td>
                 <td class="text-center">${safe(b.batchSize)}</td>
                 <td class="text-center">${safe(b.assignedCount)}</td>
-                <td class="text-center">${locked}</td>
                 <td class="text-center">${status}</td>
                 <td class="text-center">
-                    <button type="button" class="btn btn-sm btn-primary view-batch-btn"
-                            data-batch-id="${safe(b.id)}"
-                            data-batch-code="${safe(b.batchCode)}">
-                        <i class="bi bi-eye me-1"></i> View
-                    </button>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-sm btn-primary view-batch-btn"
+                                data-batch-id="${safe(b.id)}"
+                                data-batch-code="${safe(b.batchCode)}">
+                            <i class="bi bi-eye me-1"></i> View
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-success print-shotput-sheet-btn"
+                                title="Print Shotput Sheet"
+                                data-batch-id="${safe(b.id)}"
+                                data-batch-code="${safe(b.batchCode)}">
+                            <i class="bi bi-printer me-1"></i> Shotput
+                        </button>
+                    </div>
                 </td>
             `;
             tbody.appendChild(tr);
@@ -168,12 +176,22 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     tbody.addEventListener("click", (e) => {
-        const btn = e.target.closest(".view-batch-btn");
-        if (!btn) return;
-        const batchId = btn.getAttribute("data-batch-id");
-        const batchCode = btn.getAttribute("data-batch-code");
-        if (!batchId) return;
-        loadCandidates(batchId, batchCode);
+        const viewBtn = e.target.closest(".view-batch-btn");
+        if (viewBtn) {
+            const batchId = viewBtn.getAttribute("data-batch-id");
+            const batchCode = viewBtn.getAttribute("data-batch-code");
+            if (!batchId) return;
+            loadCandidates(batchId, batchCode);
+            return;
+        }
+
+        const shotputBtn = e.target.closest(".print-shotput-sheet-btn");
+        if (shotputBtn) {
+            const batchId = shotputBtn.getAttribute("data-batch-id");
+            if (!batchId) return;
+            const url = `/api/v1/batches/${encodeURIComponent(batchId)}/shotput-sheet`;
+            window.open(url, "_blank", "noopener,noreferrer");
+        }
     });
 
     printBtn.addEventListener("click", () => {

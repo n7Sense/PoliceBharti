@@ -19,7 +19,7 @@ public interface AssignRunningNumberService {
     /**
      * Current (next) running number for the event location from GlobalRunningNumber.
      */
-    long getCurrentRunningNumber(Long eventLocationId);
+    long getCurrentRunningNumber(Long eventLocationId, int todayBatchCode, int assignedCount);
 
     /**
      * Lock the batch for the current user. If already locked by another user, returns success=false with lockedByUserName.
